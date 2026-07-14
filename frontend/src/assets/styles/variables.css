@@ -1,0 +1,16 @@
+:root {
+  --color-primary: #155eef;
+  --color-primary-hover: #0f4fd6;
+  --color-primary-light: #eef4ff;
+  --color-accent: #155eef;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-bg: #f9fafb;
+  --content-max-width: 1120px;
+  --radius-md: 0.9rem;
+  --radius-lg: 1.25rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.25rem;
+  --spacing-lg: 1.75rem;
+}

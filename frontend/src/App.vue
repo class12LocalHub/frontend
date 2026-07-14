@@ -1,47 +1,30 @@
-<template>
-
-  <div class="app">
-
-    <Header />
-
-
-    <main>
-
-      <RouterView />
-
-    </main>
-
-
-    <ChatButton />
-
-  </div>
-
-</template>
-
-
 <script setup>
-
-import Header from './components/Header.vue'
-import ChatButton from './components/ChatButton.vue'
-
+import { RouterView } from 'vue-router'
+import AppHeader from './components/layout/AppHeader.vue'
+import FloatingChatButton from './components/chatbot/FloatingChatButton.vue'
 </script>
 
+<template>
+  <div class="app-shell">
+    <AppHeader />
 
-<style>
+    <main class="app-main">
+      <RouterView />
+    </main>
 
-body {
+    <FloatingChatButton />
+  </div>
+</template>
 
-  margin:0;
-
-  font-family: Arial, sans-serif;
-
+<style scoped>
+.app-shell {
+  min-height: 100vh;
+  background: #f9fafb;
 }
 
-
-.app {
-
-  min-height:100vh;
-
+.app-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
 }
-
 </style>
