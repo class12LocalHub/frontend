@@ -1,28 +1,39 @@
 <template>
-  <header class="header">
 
-    <div class="logo">
-      LocalHub
-    </div>
+<header class="header">
 
 
-    <nav>
+<div class="logo">
 
-      <a href="#home">
-        홈
-      </a>
+LocalHub
 
-      <a href="#posts">
-        게시판
-      </a>
+</div>
 
-      <a href="#dashboard">
-        대시보드
-      </a>
 
-    </nav>
 
-  </header>
+<nav>
+
+
+<RouterLink to="/">
+홈
+</RouterLink>
+
+
+<RouterLink to="/posts">
+게시판
+</RouterLink>
+
+
+<RouterLink to="/dashboard">
+대시보드
+</RouterLink>
+
+
+</nav>
+
+
+</header>
+
 </template>
 
 
@@ -30,59 +41,53 @@
 
 .header {
 
-  height:70px;
+height:70px;
 
-  display:flex;
+display:flex;
 
-  justify-content:space-between;
+justify-content:space-between;
 
-  align-items:center;
+align-items:center;
 
-  padding:0 40px;
+padding:0 40px;
 
-  border-bottom:1px solid #ddd;
-
-  position:sticky;
-
-  top:0;
-
-  background:white;
-
-  z-index:10;
+border-bottom:1px solid #ddd;
 
 }
 
 
 .logo {
 
-  font-size:24px;
+font-size:24px;
 
-  font-weight:bold;
+font-weight:bold;
 
 }
 
 
 nav {
 
-  display:flex;
+display:flex;
 
-  gap:20px;
+gap:20px;
 
 }
 
 
 a {
 
-  text-decoration:none;
+text-decoration:none;
 
-  color:black;
+color:black;
 
 }
 
 
-a:hover {
+.router-link-active {
 
-  color:#2563eb;
+color:#2563eb;
+
+font-weight:bold;
 
 }
 

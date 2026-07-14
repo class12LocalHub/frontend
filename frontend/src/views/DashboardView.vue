@@ -1,3 +1,12 @@
 <template>
-  <h1>Dashboard</h1>
+
+  <DashboardSection />
+
 </template>
+
+
+<script setup>
+
+import DashboardSection from '../components/DashboardSection.vue'
+
+</script>

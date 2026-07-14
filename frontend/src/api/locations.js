@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 
-const API_URL = 'http://localhost:8000/api/locations'
+const API_URL = 'http://localhost:8000/api/posts'
 
 
 
-// 지역 정보 전체 조회
-export function getLocations(){
+// 게시글 목록 조회
+export function getPosts(){
 
   return axios.get(API_URL)
 
@@ -14,11 +14,51 @@ export function getLocations(){
 
 
 
-// 카테고리별 조회
-export function getLocationsByCategory(category){
+// 게시글 상세 조회
+export function getPost(id){
 
   return axios.get(
-    `${API_URL}?category=${category}`
+    `${API_URL}/${id}`
+  )
+
+}
+
+
+
+// 게시글 작성
+export function createPost(post){
+
+  return axios.post(
+    API_URL,
+    post
+  )
+
+}
+
+
+
+// 게시글 수정
+export function updatePost(id, post){
+
+  return axios.put(
+    `${API_URL}/${id}`,
+    post
+  )
+
+}
+
+
+
+// 게시글 삭제
+export function deletePost(id, password){
+
+  return axios.delete(
+    `${API_URL}/${id}`,
+    {
+      data:{
+        password:password
+      }
+    }
   )
 
 }
