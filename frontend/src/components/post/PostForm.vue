@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { getLocationSuggestions, getLocationById } from '../../services/locationsService.js'
+import { getLocationSuggestions } from '../../services/locationsService.js'
 
 const props = defineProps({
   mode: {
@@ -63,22 +63,10 @@ const resetForm = (source = {}) => {
   form.location_id = source.location_id ?? null
   form.location_keyword = ''
   locationSuggestions.value = []
-  selectedLocation.value = null
+  selectedLocation.value = props.mode === 'edit' ? (source.location ?? null) : null
   Object.keys(errors).forEach((key) => {
     errors[key] = ''
   })
-
-  // Load existing location if editing
-  if (props.mode === 'edit' && source.location_id) {
-    loadExistingLocation(source.location_id)
-  }
-}
-
-const loadExistingLocation = async (locationId) => {
-  const location = await getLocationById(locationId)
-  if (location) {
-    selectedLocation.value = location
-  }
 }
 
 watch(

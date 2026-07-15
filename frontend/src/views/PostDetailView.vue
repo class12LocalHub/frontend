@@ -2,7 +2,6 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deletePost, getPostById } from '../services/postService.js'
-import { getLocationById } from '../services/locationsService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,6 +10,7 @@ const postId = computed(() => Number(route.params.id ?? 0))
 const post = ref(null)
 const status = ref('loading')
 const errorMessage = ref('')
+const locationError = ref('')
 const isModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
@@ -22,6 +22,7 @@ const formattedContent = computed(() => post.value?.content ?? '')
 const loadPost = async () => {
   status.value = 'loading'
   errorMessage.value = ''
+  locationError.value = ''
   post.value = null
 
   try {
@@ -33,17 +34,10 @@ const loadPost = async () => {
       return
     }
 
-    // Initialize location data
-    let locationData = null
-    if (result.location_id) {
-      locationData = await getLocationById(result.location_id)
-    }
-
-    // Set post with all data
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
-      location: locationData,
+      location: result.location ?? null,
     }
 
     status.value = 'ready'
@@ -122,6 +116,18 @@ const goToEdit = () => {
   router.push(`/posts/${postId.value}/edit`)
 }
 
+const goToLocation = () => {
+  locationError.value = ''
+  const sourceId = String(post.value?.location?.source_id ?? '').trim()
+
+  if (!sourceId) {
+    locationError.value = '연결 장소의 지도 정보를 찾을 수 없습니다.'
+    return
+  }
+
+  router.push({ name: 'map', query: { poiId: sourceId } })
+}
+
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   const year = date.getFullYear()
@@ -169,12 +175,13 @@ const formatDate = (dateString) => {
           </div>
 
           <div v-if="post.location" class="location-section">
-            <div class="location-info-card">
+            <button type="button" class="location-info-card" @click="goToLocation">
               <div class="location-header">관련 장소</div>
               <div class="location-name">{{ post.location.name }}</div>
               <div class="location-address">{{ post.location.address }}</div>
               <div class="location-category">{{ post.location.category }}</div>
-            </div>
+            </button>
+            <p v-if="locationError" class="location-error" role="alert">{{ locationError }}</p>
           </div>
 
           <div class="tag-row">
@@ -428,10 +435,28 @@ const formatDate = (dateString) => {
 }
 
 .location-info-card {
+  display: block;
+  width: 100%;
   padding: 1rem;
   border: 1px solid rgba(14, 118, 255, 0.16);
   background: rgba(14, 118, 255, 0.04);
   border-radius: 0.85rem;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.location-info-card:hover,
+.location-info-card:focus-visible {
+  border-color: rgba(14, 118, 255, 0.4);
+  background: rgba(14, 118, 255, 0.08);
+}
+
+.location-error {
+  margin: 0.65rem 0 0;
+  color: #d14343;
+  font-size: 0.9rem;
 }
 
 .location-header {
