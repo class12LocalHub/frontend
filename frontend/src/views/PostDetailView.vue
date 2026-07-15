@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deletePost, getPostById } from '../services/postService.js'
+import { getLocationById } from '../services/locationsService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,10 +33,19 @@ const loadPost = async () => {
       return
     }
 
+    // Initialize location data
+    let locationData = null
+    if (result.location_id) {
+      locationData = await getLocationById(result.location_id)
+    }
+
+    // Set post with all data
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
+      location: locationData,
     }
+
     status.value = 'ready'
   } catch (error) {
     if (error?.response?.status === 404) {
@@ -155,6 +165,15 @@ const formatDate = (dateString) => {
                 <span>· {{ formatDate(post.created_at) }}</span>
                 <span>· 조회수 {{ post.view_count }}</span>
               </div>
+            </div>
+          </div>
+
+          <div v-if="post.location" class="location-section">
+            <div class="location-info-card">
+              <div class="location-header">관련 장소</div>
+              <div class="location-name">{{ post.location.name }}</div>
+              <div class="location-address">{{ post.location.address }}</div>
+              <div class="location-category">{{ post.location.category }}</div>
             </div>
           </div>
 
@@ -402,6 +421,45 @@ const formatDate = (dateString) => {
   margin: 0 0 0.75rem;
   color: var(--color-muted);
   font-size: 0.92rem;
+}
+
+.location-section {
+  margin-bottom: 1rem;
+}
+
+.location-info-card {
+  padding: 1rem;
+  border: 1px solid rgba(14, 118, 255, 0.16);
+  background: rgba(14, 118, 255, 0.04);
+  border-radius: 0.85rem;
+}
+
+.location-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.location-name {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.location-address {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin-bottom: 0.5rem;
+}
+
+.location-category {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 @media (max-width: 720px) {

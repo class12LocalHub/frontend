@@ -20,7 +20,7 @@ const emit = defineEmits(['select-place'])
         :key="place.id"
         :class="['place-item', { active: place.id === selectedPlaceId }]"
       >
-        <button type="button" class="place-item__button" @click="$emit('select-place', place.id)">
+        <button type="button" class="place-item__button" @click="$emit('select-place', place)">
           <div>
             <strong>{{ place.name }}</strong>
             <p>{{ place.category }}</p>

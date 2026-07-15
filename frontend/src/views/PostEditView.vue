@@ -23,6 +23,7 @@ const loadPost = async () => {
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
+      location_id: result.location_id ?? null,
     }
   } catch (error) {
     if (error?.response?.status === 404) {
