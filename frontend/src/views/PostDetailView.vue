@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LikeButton from '../components/post/LikeButton.vue'
 import { deletePost, getPostById } from '../services/postService.js'
 
 const route = useRoute()
@@ -36,8 +35,6 @@ const loadPost = async () => {
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
-      like_count: result.like_count ?? 0,
-      liked: result.liked ?? false,
     }
     status.value = 'ready'
   } catch (error) {
@@ -159,11 +156,6 @@ const formatDate = (dateString) => {
                 <span>· 조회수 {{ post.view_count }}</span>
               </div>
             </div>
-            <LikeButton
-              :post-id="post.id"
-              :initial-count="post.like_count"
-              :initial-liked="post.liked"
-            />
           </div>
 
           <div class="tag-row">
