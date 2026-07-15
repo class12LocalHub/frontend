@@ -248,13 +248,17 @@ onUnmounted(() => {
 }
 
 .category-card__inner {
-  display: block;
-  padding: 1.2rem;
+  display: flex;                  /* Flexbox 레이아웃 적용 */
+  flex-direction: column;         /* 세로 방향으로 정렬 */
+  align-items: center;            /* 가로축 중앙 정렬 */
+  justify-content: center;        /* 세로축 중앙 정렬 */
+  padding: 1.8rem 1.2rem;         /* 위아래 여백을 더 넓혀서 카드를 시원하게 만듦 */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: #fafafa;
   transition: transform 200ms ease, box-shadow 200ms ease;
   height: 100%;
+  text-align: center;             /* 텍스트 중앙 정렬 보장 */
 }
 
 .category-card:hover .category-card__inner {
@@ -263,19 +267,23 @@ onUnmounted(() => {
 }
 
 .category-card__icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.6rem;
+  font-size: 2.5rem;             /* 👈 기존 1.5rem -> 2.5rem으로 대폭 확대 */
+  margin-bottom: 0.8rem;         /* 글자와의 간격 확보 */
 }
 
 .category-card h3 {
-  margin: 0 0 0.3rem;
-  font-size: 1rem;
+  margin: 0;                     /* 불필요한 마진 제거 */
+  font-size: 1.25rem;            /* 👈 기존 1rem -> 1.25rem으로 확대 */
+  font-weight: 700;              /* 👈 아주 두꺼운 글씨체 적용 */
+  color: var(--color-text);
 }
 
 .category-card p {
-  margin: 0;
+  margin-top: 0.4rem;            /* 이름과의 간격 조정 */
+  margin-bottom: 0;
   font-size: 0.9rem;
+  font-weight: 500;              /* 설명 글자도 약간 더 선명하게 변경 */
   color: var(--color-muted);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 </style>
