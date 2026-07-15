@@ -436,19 +436,6 @@ onBeforeUnmount(() => {
       <div v-else-if="error" class="status-card status-error">{{ error }}</div>
 
       <template v-else>
-        <!-- 서울 데이터 인사이트 -->
-        <div v-if="insights.length > 0" class="insights-section fade-up">
-          <div class="insights-header">
-            <h2>📊 서울 데이터 인사이트</h2>
-          </div>
-          <div class="insights-grid">
-            <div v-for="(insight, index) in insights" :key="index" class="insight-item">
-              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '📉' }}</div>
-              <p class="insight-text">{{ insight }}</p>
-            </div>
-          </div>
-        </div>
-
         <!-- 상단 4개 지표 카드 -->
         <div class="metrics-grid">
           <article class="metric-card fade-up">
@@ -499,6 +486,19 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </article>
+        </div>
+
+        <!-- 서울 데이터 인사이트 -->
+        <div v-if="insights.length > 0" class="insights-section fade-up">
+          <div class="insights-header">
+            <h2>📊 서울 데이터 인사이트</h2>
+          </div>
+          <div class="insights-grid">
+            <div v-for="(insight, index) in insights" :key="index" class="insight-item">
+              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '📉' }}</div>
+              <p class="insight-text">{{ insight }}</p>
+            </div>
+          </div>
         </div>
 
         <!-- 숨은 지역 이야기 -->
@@ -1101,6 +1101,7 @@ onBeforeUnmount(() => {
 .metric-card:hover,
 .chart-card:hover,
 .insights-section:hover,
+.hidden-story-section:hover,
 .recent-posts-section:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
