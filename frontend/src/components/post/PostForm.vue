@@ -333,7 +333,7 @@ const titleLimit = 200
 
       <div class="form-field">
         <label class="form-label" for="tags">
-          태그 <span class="optional">선택</span>
+          태그
         </label>
         <div class="tag-input-row">
           <input

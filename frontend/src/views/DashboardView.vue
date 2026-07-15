@@ -123,6 +123,7 @@ const createBarChart = () => {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
+      resizeDelay: 100,
       layout: {
         padding: { top: 16, right: 12, left: 12, bottom: 12 },
       },
@@ -203,6 +204,7 @@ const createDoughnutChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      resizeDelay: 100,
       animation: isReducedMotion
         ? false
         : {
@@ -636,6 +638,7 @@ onBeforeUnmount(() => {
   gap: 1rem;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   margin-bottom: 2rem;
+  align-items: start;
 }
 
 .chart-card {
@@ -647,10 +650,10 @@ onBeforeUnmount(() => {
   border-radius: 1rem;
   padding: 1.25rem;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-  min-height: 420px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-self: start;
 }
 
 .donut-card {
@@ -660,21 +663,26 @@ onBeforeUnmount(() => {
 
 .chart-canvas-wrapper {
   position: relative;
-  flex: 1;
-  min-height: 320px;
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  height: 400px;
+  max-height: 400px;
+  min-height: 0;
   overflow: hidden;
 }
 
 .donut-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  height: 400px;
+  max-height: 400px;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -683,6 +691,7 @@ onBeforeUnmount(() => {
   width: 100% !important;
   max-width: 100% !important;
   height: 100% !important;
+  max-height: 100% !important;
 }
 
 .chart-empty {
@@ -1009,13 +1018,15 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .chart-grid {
     grid-template-columns: 1fr;
   }
 
-  .chart-card {
-    min-height: 360px;
+  .chart-canvas-wrapper,
+  .donut-wrapper {
+    height: 360px;
+    max-height: 360px;
   }
 
   .metrics-grid {
@@ -1046,8 +1057,10 @@ onBeforeUnmount(() => {
     padding-bottom: 1rem;
   }
 
-  .chart-card {
-    min-height: 320px;
+  .chart-canvas-wrapper,
+  .donut-wrapper {
+    height: 320px;
+    max-height: 320px;
   }
 
   .posts-grid {

@@ -4,9 +4,14 @@ import { useRoute } from 'vue-router'
 import MapCanvas from '../components/map/MapCanvas.vue'
 import MapCategoryFilter from '../components/map/MapCategoryFilter.vue'
 import PlaceList from '../components/map/PlaceList.vue'
+<<<<<<< HEAD
 
 import { getMapPoiById, getMapPois } from '../services/mapService.js'
 import { getLocationSuggestions } from '../services/locationsService.js'
+=======
+import { getMapPois } from '../services/mapService.js'
+import { getLocationSuggestions, getLocationById } from '../services/locationsService.js'
+>>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
 import { toApiCategory, toDisplayCategory } from '../utils/categoryConverter.js'
 
 const categories = [
@@ -274,10 +279,47 @@ const togglePlaceList = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   searchInput.value = ''
   keyword.value = ''
-  loadPlaces()
+
+  // Handle locationId from query parameter
+  const locationId = route.query.locationId
+  if (locationId) {
+    try {
+      const location = await getLocationById(Number(locationId))
+      if (location) {
+        // Set category from location
+        selectedCategory.value = toDisplayCategory(location.category)
+        
+        // Set center coordinates for map
+        centerCoordinates.value = {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        }
+        
+        // Select the place on the map
+        selectedPlaceId.value = location.id
+        
+        // Add location to places array if not already there
+        if (!places.value.find(p => p.id === location.id)) {
+          places.value.unshift({
+            ...location,
+            category: toDisplayCategory(location.category),
+            latitude: location.latitude ?? null,
+            longitude: location.longitude ?? null,
+          })
+        }
+        
+        // Open place list to show the selected location
+        isPlaceListOpen.value = true
+      }
+    } catch (err) {
+      console.warn('Failed to load location from query:', err)
+    }
+  }
+
+  await loadPlaces()
 })
 </script>
 

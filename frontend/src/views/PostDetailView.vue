@@ -34,6 +34,23 @@ const loadPost = async () => {
       return
     }
 
+<<<<<<< HEAD
+=======
+    // Initialize location data
+    let locationData = result.location || null
+    
+    // If location object is not in response but location_id exists, fetch it
+    if (!locationData && result.location_id) {
+      try {
+        locationData = await getLocationById(result.location_id)
+      } catch (locationError) {
+        console.warn('Failed to load location details:', locationError)
+        // Continue without location data - don't break the whole post view
+      }
+    }
+
+    // Set post with all data
+>>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
@@ -135,6 +152,11 @@ const formatDate = (dateString) => {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}.${month}.${day}`
 }
+
+const displayCategory = (category) => {
+  if (category === '축제공연행사') return '축제/공연행사'
+  return category || '기타'
+}
 </script>
 
 <template>
@@ -167,13 +189,22 @@ const formatDate = (dateString) => {
             <div>
               <h1>{{ post.title }}</h1>
               <div class="meta-row">
-                <span class="badge">{{ post.category }}</span>
+                <span class="badge">{{ displayCategory(post.category) }}</span>
+                <router-link 
+                  v-if="post.location" 
+                  :to="`/map?locationId=${post.location.id}`"
+                  class="location-badge" 
+                  :title="post.location.address"
+                >
+                  📍 {{ post.location.name }}
+                </router-link>
                 <span>· {{ formatDate(post.created_at) }}</span>
                 <span>· 조회수 {{ post.view_count }}</span>
               </div>
             </div>
           </div>
 
+<<<<<<< HEAD
           <div v-if="post.location" class="location-section">
             <button type="button" class="location-info-card" @click="goToLocation">
               <div class="location-header">관련 장소</div>
@@ -184,6 +215,8 @@ const formatDate = (dateString) => {
             <p v-if="locationError" class="location-error" role="alert">{{ locationError }}</p>
           </div>
 
+=======
+>>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
           <div class="tag-row">
             <button v-for="tag in post.custom_tags" :key="tag" type="button" class="tag-pill">
               #{{ tag }}
@@ -193,9 +226,11 @@ const formatDate = (dateString) => {
           <div class="post-content">{{ formattedContent }}</div>
 
           <div class="detail-actions">
-            <button type="button" class="button-secondary" @click="goToBoard">목록</button>
-            <button type="button" class="button-secondary" @click="goToEdit">수정</button>
-            <button type="button" class="button-danger" @click="openDeleteModal">삭제</button>
+            <button type="button" class="button-list" @click="goToBoard">목록</button>
+            <div class="action-buttons-group">
+              <button type="button" class="button-edit" @click="goToEdit">수정</button>
+              <button type="button" class="button-delete" @click="openDeleteModal">삭제</button>
+            </div>
           </div>
         </article>
       </template>
@@ -287,6 +322,7 @@ const formatDate = (dateString) => {
   margin-top: 0.85rem;
   color: var(--color-muted);
   font-size: 0.95rem;
+  align-items: center;
 }
 
 .badge {
@@ -298,6 +334,33 @@ const formatDate = (dateString) => {
   color: var(--color-primary);
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  height: 28px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  border: 1px solid transparent;
+}
+
+.location-badge:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.location-badge:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .tag-row {
@@ -326,9 +389,64 @@ const formatDate = (dateString) => {
 
 .detail-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button-list,
+.button-edit,
+.button-delete {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  border: 1px solid transparent;
+}
+
+.button-list,
+.button-edit {
+  background: #fff;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.button-list:hover,
+.button-edit:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.button-list:focus,
+.button-edit:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.button-delete {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.button-delete:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: #fca5a5;
+}
+
+.button-delete:focus {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
 }
 
 .button-secondary,
@@ -430,6 +548,7 @@ const formatDate = (dateString) => {
   font-size: 0.92rem;
 }
 
+<<<<<<< HEAD
 .location-section {
   margin-bottom: 1rem;
 }
@@ -487,6 +606,8 @@ const formatDate = (dateString) => {
   font-weight: 600;
 }
 
+=======
+>>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
 @media (max-width: 720px) {
   .post-card {
     padding: 1.2rem;
@@ -497,12 +618,26 @@ const formatDate = (dateString) => {
   }
 
   .detail-actions {
+    flex-wrap: wrap;
     justify-content: stretch;
+    gap: 0.5rem;
   }
 
-  .button-secondary,
-  .button-danger {
-    width: 100%;
+  .button-list {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .action-buttons-group {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .button-edit,
+  .button-delete {
+    flex: 1;
+    min-width: 70px;
   }
 }
 </style>
