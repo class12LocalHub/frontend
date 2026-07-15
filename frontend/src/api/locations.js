@@ -1,12 +1,13 @@
 import apiClient from './client'
 import { clampPageSize, normalizeTourApiId } from '../utils/normalize'
 
-export function getLocationSuggestions(keyword, limit = 10) {
+export function getLocationSuggestions(keyword, limit = 10, options = {}) {
   return apiClient.get('/api/locations/suggestions', {
     params: {
       keyword,
       limit: Math.min(Math.max(Number(limit) || 10, 1), 20),
     },
+    signal: options.signal,
   })
 }
 

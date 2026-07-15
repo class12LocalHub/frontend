@@ -5,7 +5,7 @@ export function getMapFilters() {
   return apiClient.get('/api/map/filters')
 }
 
-export function getMapPois(params = {}) {
+export function getMapPois(params = {}, options = {}) {
   const query = {
     page: Math.max(1, Number(params.page) || 1),
     size: clampPageSize(params.size, 20),
@@ -15,9 +15,14 @@ export function getMapPois(params = {}) {
     if (params[key]) query[key] = params[key]
   }
 
-  return apiClient.get('/api/map/pois', { params: query })
+  return apiClient.get('/api/map/pois', {
+    params: query,
+    signal: options.signal,
+  })
 }
 
-export function getMapPoi(id) {
-  return apiClient.get(`/api/map/pois/${normalizeTourApiId(id)}`)
+export function getMapPoi(id, options = {}) {
+  return apiClient.get(`/api/map/pois/${normalizeTourApiId(id)}`, {
+    signal: options.signal,
+  })
 }

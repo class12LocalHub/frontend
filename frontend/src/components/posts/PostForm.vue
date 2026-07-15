@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { getCategories } from '../../api/categories'
 import { getLocationSuggestions } from '../../api/locations'
 import { getApiErrorMessage } from '../../utils/api'
@@ -41,10 +41,17 @@ const categoryError = ref('')
 const locationKeyword = ref('')
 const locationResults = ref([])
 const selectedLocation = ref(null)
-const searchingLocations = ref(false)
+const isLocationSearching = ref(false)
+const isLocationDropdownOpen = ref(false)
 const locationError = ref('')
 const validationError = ref('')
 const hasSearchedLocations = ref(false)
+
+let locationDebounceTimer = null
+let locationAbortController = null
+let locationRequestId = 0
+let lastScheduledKeyword = ''
+let lastRequestedKeyword = ''
 
 watch(
   () => props.initialPost,
@@ -79,42 +86,140 @@ async function loadCategories() {
   }
 }
 
-async function searchLocations() {
-  const keyword = locationKeyword.value.trim()
+function cancelLocationSearch() {
+  if (locationDebounceTimer) {
+    clearTimeout(locationDebounceTimer)
+    locationDebounceTimer = null
+  }
 
-  if (!keyword) {
-    locationError.value = '검색할 장소 이름을 입력해 주세요.'
+  if (locationAbortController) {
+    locationAbortController.abort()
+    locationAbortController = null
+  }
+
+  locationRequestId += 1
+  isLocationSearching.value = false
+}
+
+function resetLocationSearch() {
+  cancelLocationSearch()
+  locationResults.value = []
+  locationError.value = ''
+  hasSearchedLocations.value = false
+  isLocationDropdownOpen.value = false
+  lastScheduledKeyword = ''
+  lastRequestedKeyword = ''
+}
+
+async function requestLocationSuggestions(keyword) {
+  locationDebounceTimer = null
+
+  if (selectedLocation.value || locationKeyword.value.trim() !== keyword) {
+    isLocationSearching.value = false
     return
   }
 
-  searchingLocations.value = true
-  locationError.value = ''
-  hasSearchedLocations.value = true
+  const requestId = ++locationRequestId
+  locationAbortController = new AbortController()
+  lastRequestedKeyword = keyword
 
   try {
-    const response = await getLocationSuggestions(keyword, 10)
+    const response = await getLocationSuggestions(keyword, 10, {
+      signal: locationAbortController.signal,
+    })
+
+    if (requestId !== locationRequestId) return
+    if (locationKeyword.value.trim() !== keyword || selectedLocation.value) return
+
     locationResults.value = response.data.items
+    hasSearchedLocations.value = true
+    isLocationDropdownOpen.value = true
   } catch (error) {
+    if (requestId !== locationRequestId || error.code === 'ERR_CANCELED') return
+
+    lastRequestedKeyword = ''
     locationError.value = getApiErrorMessage(error, '장소를 검색하지 못했습니다.')
+    hasSearchedLocations.value = true
+    isLocationDropdownOpen.value = true
   } finally {
-    searchingLocations.value = false
+    if (requestId === locationRequestId) {
+      locationAbortController = null
+      isLocationSearching.value = false
+    }
+  }
+}
+
+function scheduleLocationSearch(value) {
+  const keyword = value.trim()
+
+  if (!keyword) {
+    resetLocationSearch()
+    return
+  }
+
+  if (keyword === lastScheduledKeyword && (locationDebounceTimer || locationAbortController)) return
+
+  if (keyword === lastRequestedKeyword && hasSearchedLocations.value) {
+    isLocationDropdownOpen.value = true
+    return
+  }
+
+  cancelLocationSearch()
+  lastScheduledKeyword = keyword
+  locationResults.value = []
+  locationError.value = ''
+  hasSearchedLocations.value = false
+  isLocationDropdownOpen.value = true
+  isLocationSearching.value = true
+  locationDebounceTimer = setTimeout(() => requestLocationSuggestions(keyword), 250)
+}
+
+function handleLocationValue(value) {
+  locationKeyword.value = value
+  scheduleLocationSearch(value)
+}
+
+function handleLocationInput(event) {
+  handleLocationValue(event.target.value)
+}
+
+function handleLocationCompositionUpdate(event) {
+  handleLocationValue(event.target.value)
+}
+
+function handleLocationCompositionEnd(event) {
+  handleLocationValue(event.target.value)
+}
+
+function handleLocationFocus() {
+  if (locationResults.value.length > 0) {
+    isLocationDropdownOpen.value = true
+    return
+  }
+
+  if (locationKeyword.value.trim() && locationError.value) {
+    lastScheduledKeyword = ''
+    scheduleLocationSearch(locationKeyword.value)
   }
 }
 
 function selectLocation(location) {
+  cancelLocationSearch()
   selectedLocation.value = location
   form.locationId = normalizeLocationId(location.id)
   locationKeyword.value = location.name
   locationResults.value = []
   hasSearchedLocations.value = false
+  isLocationDropdownOpen.value = false
+  lastScheduledKeyword = ''
+  lastRequestedKeyword = ''
 }
 
 function clearLocation() {
+  resetLocationSearch()
   selectedLocation.value = null
   form.locationId = null
   locationKeyword.value = ''
-  locationResults.value = []
-  hasSearchedLocations.value = false
 }
 
 function submitForm() {
@@ -151,6 +256,7 @@ function submitForm() {
 }
 
 onMounted(loadCategories)
+onBeforeUnmount(cancelLocationSearch)
 </script>
 
 <template>
@@ -174,32 +280,47 @@ onMounted(loadCategories)
     <div class="field">
       <label for="post-location">연결 장소</label>
       <div v-if="selectedLocation" class="selected-location">
-        <span>{{ selectedLocation.name }}</span>
+        <span class="location-tag">#{{ selectedLocation.name }}</span>
         <button type="button" class="text-button" @click="clearLocation">선택 해제</button>
       </div>
-      <div v-else class="inline-field">
+      <div v-else class="location-autocomplete">
         <input
           id="post-location"
-          v-model="locationKeyword"
+          :value="locationKeyword"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="location-suggestions"
+          :aria-expanded="isLocationDropdownOpen"
           placeholder="장소 이름 또는 초성"
-          @keydown.enter.prevent="searchLocations"
+          @input="handleLocationInput"
+          @compositionupdate="handleLocationCompositionUpdate"
+          @compositionend="handleLocationCompositionEnd"
+          @focus="handleLocationFocus"
+          @keydown.enter.prevent
+          @keydown.escape="isLocationDropdownOpen = false"
         />
-        <button type="button" class="secondary-button" :disabled="searchingLocations" @click="searchLocations">
-          {{ searchingLocations ? '검색 중' : '장소 검색' }}
-        </button>
+        <div v-if="isLocationDropdownOpen" id="location-suggestions" class="suggestions-dropdown">
+          <p v-if="isLocationSearching" class="suggestion-state" role="status">장소를 검색하는 중입니다.</p>
+          <p v-else-if="locationError" class="suggestion-state is-error" role="alert">{{ locationError }}</p>
+          <p v-else-if="hasSearchedLocations && locationResults.length === 0" class="suggestion-state">
+            검색된 장소가 없습니다.
+          </p>
+          <ul v-else-if="locationResults.length" class="suggestions" role="listbox">
+            <li v-for="location in locationResults" :key="String(location.id)">
+              <button
+                type="button"
+                role="option"
+                @mousedown.prevent
+                @click.stop="selectLocation(location)"
+              >
+                <strong>{{ location.name }}</strong>
+                <span>{{ location.category }} · {{ location.address || '주소 정보 없음' }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
-      <p v-if="locationError" class="field-error">{{ locationError }}</p>
-      <ul v-if="locationResults.length" class="suggestions">
-        <li v-for="location in locationResults" :key="String(location.source_id)">
-          <button type="button" @click="selectLocation(location)">
-            <strong>{{ location.name }}</strong>
-            <span>{{ location.category }} · {{ location.address || '주소 정보 없음' }}</span>
-          </button>
-        </li>
-      </ul>
-      <p v-else-if="hasSearchedLocations && !searchingLocations && !locationError" class="field-help">
-        검색된 장소가 없습니다.
-      </p>
     </div>
 
     <div class="field">
@@ -256,16 +377,11 @@ textarea {
   resize: vertical;
 }
 
-.inline-field,
 .selected-location,
 .form-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.inline-field input {
-  flex: 1;
 }
 
 .selected-location {
@@ -276,6 +392,15 @@ textarea {
   background: #f1f8f5;
 }
 
+.location-tag {
+  color: #176b4d;
+  font-weight: 800;
+}
+
+.location-autocomplete {
+  position: relative;
+}
+
 .text-button {
   padding: 4px;
   border: 0;
@@ -283,13 +408,35 @@ textarea {
   color: #176b4d;
 }
 
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 15;
+  overflow: hidden;
+  border: 1px solid #bdc6d4;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(23, 32, 51, 0.14);
+}
+
+.suggestion-state {
+  margin: 0;
+  padding: 14px;
+  color: #647085;
+  font-size: 13px;
+}
+
+.suggestion-state.is-error {
+  color: #a13d3d;
+}
+
 .suggestions {
   max-height: 250px;
   margin: 0;
   padding: 0;
   overflow-y: auto;
-  border: 1px solid #d8dee8;
-  border-radius: 6px;
   list-style: none;
 }
 
@@ -330,12 +477,5 @@ textarea {
 
 .form-actions {
   justify-content: flex-end;
-}
-
-@media (max-width: 560px) {
-  .inline-field {
-    align-items: stretch;
-    flex-direction: column;
-  }
 }
 </style>
