@@ -12,12 +12,21 @@ const categories = [
   { id: 'festival', name: '축제/공연행사', icon: '🎭', description: '다가오는 행사를 미리 확인해보세요.' },
 ]
 
-// 자연스러운 무한 롤링을 위해 3세트를 연결합니다.
 const clonedCategories = computed(() => {
   return [...categories, ...categories, ...categories]
 })
 
 const cardsToShow = ref(4)
+const sliderContainer = ref(null)
+
+// 롤링 및 애니메이션 제어 상태 변수
+let requestAnimationFrameId = null
+const isHovering = ref(false)
+const scrollSpeed = 0.8 // 자동 롤링 속도
+
+// 버튼 클릭 시 목표 스크롤 지점을 추적하기 위한 변수들
+let targetScrollLeft = null
+const btnMoveSpeed = 0.15 // 버튼 클릭 시 부드럽게 미끄러지는 감도 (0에 가까울수록 부드럽고 천천히 멈춤)
 
 const getCardsToShow = () => {
   if (typeof window === 'undefined') return 4
@@ -30,35 +39,93 @@ const updateCardsToShow = () => {
   cardsToShow.value = getCardsToShow()
 }
 
-// ◀ 왼쪽 버튼 클릭 시 부드럽게 왼쪽으로 밀어주기
+// 🔄 매 프레임마다 스크롤을 계산하고 렌더링하는 핵심 함수
+const animateScroll = () => {
+  const container = sliderContainer.value
+  if (!container) return
+
+  const originalWidth = container.scrollWidth / 3
+
+  // 1. 버튼 클릭으로 인한 강제 스크롤 목적지(targetScrollLeft)가 있는 경우
+  if (targetScrollLeft !== null) {
+    // 감속 공식을 활용한 부드러운 목적지 스크롤 이동 (Lerp 기법)
+    const diff = targetScrollLeft - container.scrollLeft
+    if (Math.abs(diff) > 1) {
+      container.scrollLeft += diff * btnMoveSpeed
+    } else {
+      container.scrollLeft = targetScrollLeft
+      targetScrollLeft = null // 목적지에 완전히 도달하면 제어권을 다시 자동 롤링으로 인계
+    }
+  } 
+  // 2. 평상시 자동 무한 롤링 상태 (마우스 호버가 아닐 때만 작동)
+  else if (!isHovering.value) {
+    container.scrollLeft += scrollSpeed
+  }
+
+  // 3. 무한 루프 워프 구간 설계
+  // 3번째 세트로 넘어가면 2번째 세트의 원래 자리로 조용히 당겨옴
+  if (container.scrollLeft >= originalWidth * 2) {
+    container.scrollLeft -= originalWidth
+    if (targetScrollLeft !== null) targetScrollLeft -= originalWidth
+  } 
+  // 1번째 세트의 시작점 밑으로 내려가면 다시 2번째 세트로 밀어줌
+  else if (container.scrollLeft <= 0) {
+    container.scrollLeft += originalWidth
+    if (targetScrollLeft !== null) targetScrollLeft += originalWidth
+  }
+
+  // 다음 프레임 예약
+  requestAnimationFrameId = requestAnimationFrame(animateScroll)
+}
+
+// ◀ 왼쪽 버튼 클릭: 현재 화면 크기에 비례해 좌측 카드 1칸 크기만큼 목적지 지정
 const prevSlide = () => {
-  const container = document.querySelector('.slider-container')
+  const container = sliderContainer.value
   if (container) {
-    container.scrollBy({
-      left: -300,
-      behavior: 'smooth'
-    })
+    const cardWidth = container.clientWidth / cardsToShow.value
+    // 현재 스크롤 위치 기준으로 소수점 버그를 방지하며 목적지 계산
+    const currentTarget = targetScrollLeft !== null ? targetScrollLeft : container.scrollLeft
+    targetScrollLeft = currentTarget - cardWidth
   }
 }
 
-// ▶ 오른쪽 버튼 클릭 시 부드럽게 오른쪽으로 밀어주기
+// ▶ 오른쪽 버튼 클릭: 우측 카드 1칸 크기만큼 목적지 지정
 const nextSlide = () => {
-  const container = document.querySelector('.slider-container')
+  const container = sliderContainer.value
   if (container) {
-    container.scrollBy({
-      left: 300,
-      behavior: 'smooth'
-    })
+    const cardWidth = container.clientWidth / cardsToShow.value
+    const currentTarget = targetScrollLeft !== null ? targetScrollLeft : container.scrollLeft
+    targetScrollLeft = currentTarget + cardWidth
   }
+}
+
+// 마우스 진입 시 자동 전진 일시정지
+const onMouseEnter = () => {
+  isHovering.value = true
+}
+
+// 마우스가 떠나면 자동 전진 다시 활성화 (진행 중이던 버튼 이동이 있다면 버튼 이동 완료 후 재개됨)
+const onMouseLeave = () => {
+  isHovering.value = false
 }
 
 onMounted(() => {
   updateCardsToShow()
   window.addEventListener('resize', updateCardsToShow)
+  
+  const container = sliderContainer.value
+  if (container) {
+    // 렌더링되자마자 중간 세트 영역으로 워프시킵니다.
+    container.scrollLeft = container.scrollWidth / 3
+    requestAnimationFrameId = requestAnimationFrame(animateScroll)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateCardsToShow)
+  if (requestAnimationFrameId) {
+    cancelAnimationFrame(requestAnimationFrameId)
+  }
 })
 </script>
 
@@ -72,14 +139,13 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="slider-container">
-      <div 
-        class="slider-track"
-        :style="{
-          '--orig-count': categories.length,
-          '--cards-to-show': cardsToShow
-        }"
-      >
+    <div 
+      ref="sliderContainer"
+      class="slider-container"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
+    >
+      <div class="slider-track">
         <RouterLink
           v-for="(category, index) in clonedCategories"
           :key="`${category.id}-${index}`"
@@ -148,39 +214,29 @@ onUnmounted(() => {
   transform: scale(0.95);
 }
 
-/* 스크롤바 감추고 수평 정렬을 유지하는 뷰포트 */
 .slider-container {
   width: 100%;
   overflow-x: auto;
   position: relative;
-  scroll-behavior: smooth;
+  /* ⚠️ 매우 중요: scroll-behavior를 절대 smooth로 주면 안 됩니다. 
+     우리가 프레임 단위로 수동 보간 이동을 시키기 때문에 브라우저 자체 스크롤 관성과 무조건 충돌합니다. */
+  scroll-behavior: auto; 
   cursor: grab;
-  scrollbar-width: none; /* Firefox 스크롤바 제거 */
-  -ms-overflow-style: none; /* IE 스크롤바 제거 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .slider-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera 스크롤바 제거 */
+  display: none;
 }
 
 .slider-container:active {
   cursor: grabbing;
 }
 
-/* 💡 무한 롤링 핵심 레일 (Marquee)
-  - linear 타이밍 함수를 활용하여 덜컹거림 없이 등속도로 끝없이 이동시킵니다.
-  - width는 복제본을 감안해 300%로 지정합니다.
-*/
 .slider-track {
   display: flex;
   width: 300%; 
-  /* 30초 동안 한 바퀴를 돕니다. 너무 빠르거나 느리다면 조절하세요. */
-  animation: continuousScroll 30s linear infinite;
-}
-
-/* 💡 마우스를 슬라이더 위에 올렸을 때(Hover) 흐름을 일시 정지하는 세심한 기능 */
-.slider-container:hover .slider-track {
-  animation-play-state: paused;
 }
 
 .category-card {
@@ -191,7 +247,6 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-/* 이전 버전의 카드 크기와 스타일 비율을 완벽히 복원 */
 .category-card__inner {
   display: block;
   padding: 1.2rem;
@@ -222,18 +277,5 @@ onUnmounted(() => {
   font-size: 0.9rem;
   color: var(--color-muted);
   line-height: 1.5;
-}
-
-/* 💡 무한 롤링 루프 키프레임
-  전체 트랙 넓이 300% 중, 정확히 원본 1세트 넓이(100% / 3 = -33.3333%)만큼 이동했을 때 
-  0% 위치로 순식간에 루프하여 사용자 눈에는 끊임없이 이어지는 것처럼 보이게 합니다.
-*/
-@keyframes continuousScroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-33.3333%);
-  }
 }
 </style>
