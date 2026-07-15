@@ -20,10 +20,11 @@ const categories = [
 
     <div class="category-grid">
       <RouterLink
-        v-for="category in categories"
+        v-for="(category, index) in categories"
         :key="category.id"
         :to="{ path: '/map', query: { category: category.id } }"
-        class="category-card"
+        class="category-card enter-card"
+        :style="{ '--ci': index }"
       >
         <div class="category-card__icon">{{ category.icon }}</div>
         <h3>{{ category.name }}</h3>
@@ -60,12 +61,34 @@ const categories = [
   text-decoration: none;
   color: var(--color-text);
   background: #fafafa;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .category-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+}
+
+.enter-card {
+  animation: cardUp 480ms ease-out both;
+  animation-delay: calc(var(--ci, 0) * 55ms);
+}
+
+@keyframes cardUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-card {
+    animation: none;
+  }
 }
 
 .category-card__icon {

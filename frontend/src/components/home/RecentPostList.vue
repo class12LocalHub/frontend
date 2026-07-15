@@ -45,7 +45,7 @@ const normalizedPosts = computed(() =>
 
     <template v-else-if="normalizedPosts.length">
       <ul class="post-list">
-        <li v-for="post in normalizedPosts" :key="post.id" class="post-item">
+        <li v-for="(post, index) in normalizedPosts" :key="post.id" class="post-item enter-item" :style="{ '--pi': index }">
           <div class="post-item__meta">
             <span class="post-item__category">{{ post.category }}</span>
             <RouterLink :to="`/posts/${post.id}`" class="post-item__title">{{ post.title }}</RouterLink>
@@ -106,6 +106,36 @@ const normalizedPosts = computed(() =>
   padding: 0.9rem 0;
   border-bottom: 1px solid #f3f4f6;
   gap: 1rem;
+  transition: transform 180ms ease;
+}
+
+.post-item:hover {
+  transform: translateX(3px);
+}
+
+.enter-item {
+  animation: itemUp 500ms ease-out both;
+  animation-delay: calc(var(--pi, 0) * 60ms);
+}
+
+@keyframes itemUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-item {
+    animation: none;
+  }
+  .post-item {
+    transition: none;
+  }
 }
 
 .post-item__meta {

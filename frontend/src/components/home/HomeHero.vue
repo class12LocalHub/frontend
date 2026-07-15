@@ -3,9 +3,9 @@
 <template>
   <section class="hero">
     <div class="hero__content">
-      <p class="hero__eyebrow">서울 지역 정보 공유 커뮤니티</p>
-      <h1>서울의 모든 지역 정보를 한곳에</h1>
-      <p class="hero__description">
+      <p class="hero__eyebrow enter-up" style="--d: 0ms">서울 지역 정보 공유 커뮤니티</p>
+      <h1 class="enter-up" style="--d: 70ms">서울의 모든 지역 정보를 한곳에</h1>
+      <p class="hero__description enter-up" style="--d: 170ms">
         관광지부터 축제, 맛집, 숙박까지 서울의 다양한 지역 정보를 확인하고 자유롭게 이야기를 나눠보세요.
       </p>
     </div>
@@ -45,5 +45,27 @@
   font-size: 1rem;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.92);
+}
+
+.enter-up {
+  animation: heroUp 500ms ease-out both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes heroUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-up {
+    animation: none;
+  }
 }
 </style>
