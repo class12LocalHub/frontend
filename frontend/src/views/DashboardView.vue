@@ -82,6 +82,35 @@ const minLocationCategory = computed(() => {
   }
 })
 
+// 숨은 지역 이야기: 장소 비율이 높지만 게시글 비율이 낮은 카테고리
+const hiddenCategory = computed(() => {
+  if (!dashboardData.value?.category_counts?.length || totalLocations.value === 0) return null
+
+  let best = null
+  let bestGap = -Infinity
+
+  for (const item of dashboardData.value.category_counts) {
+    if (item.count === 0) continue
+
+    const locRatio = item.count / totalLocations.value
+    const postCount = postCategoryCounts.value[item.category] ?? 0
+    const postRatio = totalPosts.value > 0 ? postCount / totalPosts.value : 0
+    const gap = locRatio - postRatio
+
+    if (gap > bestGap || (gap === bestGap && best !== null && item.count > best.locationCount)) {
+      bestGap = gap
+      best = {
+        category: item.category,
+        displayName: displayCategory(item.category),
+        locationCount: item.count,
+        postCount,
+      }
+    }
+  }
+
+  return best
+})
+
 // Insights
 const insights = computed(() => {
   const result = []
@@ -330,6 +359,14 @@ const goToBoard = () => {
   router.push('/board')
 }
 
+const goToHiddenCategoryMap = (category) => {
+  router.push({ path: '/map', query: { category } })
+}
+
+const goToHiddenCategoryCreate = (category) => {
+  router.push({ path: '/posts/create', query: { category } })
+}
+
 const formatPostDate = (dateString) => {
   const date = new Date(dateString)
   const year = date.getFullYear()
@@ -399,6 +436,19 @@ onBeforeUnmount(() => {
       <div v-else-if="error" class="status-card status-error">{{ error }}</div>
 
       <template v-else>
+        <!-- 서울 데이터 인사이트 -->
+        <div v-if="insights.length > 0" class="insights-section fade-up">
+          <div class="insights-header">
+            <h2>📊 서울 데이터 인사이트</h2>
+          </div>
+          <div class="insights-grid">
+            <div v-for="(insight, index) in insights" :key="index" class="insight-item">
+              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '📉' }}</div>
+              <p class="insight-text">{{ insight }}</p>
+            </div>
+          </div>
+        </div>
+
         <!-- 상단 4개 지표 카드 -->
         <div class="metrics-grid">
           <article class="metric-card fade-up">
@@ -451,16 +501,21 @@ onBeforeUnmount(() => {
           </article>
         </div>
 
-        <!-- 서울 데이터 인사이트 -->
-        <div v-if="insights.length > 0" class="insights-section fade-up">
-          <div class="insights-header">
-            <h2>📊 서울 데이터 인사이트</h2>
-          </div>
-          <div class="insights-grid">
-            <div v-for="(insight, index) in insights" :key="index" class="insight-item">
-              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '📉' }}</div>
-              <p class="insight-text">{{ insight }}</p>
-            </div>
+        <!-- 숨은 지역 이야기 -->
+        <div v-if="hiddenCategory" class="hidden-story-section fade-up">
+          <h2>🔍 숨은 지역 이야기</h2>
+          <p class="hidden-story-desc">
+            {{ hiddenCategory.displayName }} 장소는 {{ formatNumber(hiddenCategory.locationCount) }}곳이 등록되어 있지만<br>
+            <template v-if="hiddenCategory.postCount === 0">아직 작성된 지역 이야기가 없습니다.</template>
+            <template v-else>작성된 지역 이야기는 {{ hiddenCategory.postCount }}개뿐입니다.</template>
+          </p>
+          <div class="hidden-story-actions">
+            <button type="button" class="story-action-btn story-map-btn" @click="goToHiddenCategoryMap(hiddenCategory.category)">
+              {{ hiddenCategory.displayName }} 장소 둘러보기
+            </button>
+            <button type="button" class="story-action-btn story-create-btn" @click="goToHiddenCategoryCreate(hiddenCategory.category)">
+              {{ hiddenCategory.displayName }} 이야기 작성하기
+            </button>
           </div>
         </div>
 
@@ -473,15 +528,19 @@ onBeforeUnmount(() => {
 
           <div v-if="recentPosts.length > 0" class="posts-grid">
             <article v-for="post in recentPosts" :key="post.id" class="post-card" @click="goToPostDetail(post.id)">
-              <div class="post-icon">{{ post.category.charAt(0) }}</div>
               <div class="post-content">
                 <div class="post-title">{{ post.title }}</div>
-                <div class="post-meta">
-                  <span class="post-category">{{ displayCategory(post.category) }}</span>
-                  <span class="post-date">{{ formatPostDate(post.created_at) }}</span>
-                  <span v-if="post.view_count" class="post-views">조회 {{ post.view_count }}</span>
+                <div class="post-info">
+                  <div v-if="post.location" class="post-location">
+                    <span class="location-icon">📍</span>
+                    <span class="location-name">{{ post.location.name }}</span>
+                  </div>
+                  <div class="post-meta">
+                    <span class="post-category">{{ displayCategory(post.category) }}</span>
+                    <span class="post-date">{{ formatPostDate(post.created_at) }}</span>
+                    <span v-if="post.view_count" class="post-views">조회 {{ post.view_count }}</span>
+                  </div>
                 </div>
-                <p v-if="post.content" class="post-preview">{{ truncateText(post.content, 80) }}</p>
               </div>
             </article>
           </div>
@@ -830,9 +889,11 @@ onBeforeUnmount(() => {
   border-radius: 1rem;
   padding: 1.25rem;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  min-height: 160px;
+  justify-content: space-between;
 }
 
 .post-card:hover {
@@ -842,17 +903,7 @@ onBeforeUnmount(() => {
 }
 
 .post-icon {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(14, 118, 255, 0.1), rgba(14, 118, 255, 0.05));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.5rem;
-  color: var(--color-primary);
+  display: none;
 }
 
 .post-content {
@@ -864,11 +915,38 @@ onBeforeUnmount(() => {
 }
 
 .post-title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   font-weight: 700;
   color: #0f172a;
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.post-location {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.location-icon {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
+.location-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -878,8 +956,8 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
   font-size: 0.85rem;
+  align-items: center;
 }
 
 .post-category {
@@ -889,6 +967,7 @@ onBeforeUnmount(() => {
   padding: 0.25rem 0.6rem;
   border-radius: 0.4rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .post-date {
@@ -902,13 +981,7 @@ onBeforeUnmount(() => {
 }
 
 .post-preview {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 .empty-state {
@@ -935,10 +1008,69 @@ onBeforeUnmount(() => {
   color: var(--color-danger);
 }
 
+/* 숨은 지역 이야기 */
+.hidden-story-section {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  margin-bottom: 2rem;
+}
+
+.hidden-story-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  color: #0f172a;
+}
+
+.hidden-story-desc {
+  margin: 0 0 1.25rem;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.hidden-story-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.story-action-btn {
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.story-map-btn {
+  background: #f0f7ff;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.story-map-btn:hover {
+  background: #dbeafe;
+}
+
+.story-create-btn {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #fff;
+}
+
+.story-create-btn:hover {
+  background: rgba(14, 118, 255, 0.85);
+}
+
 /* 애니메이션 */
 .metric-card,
 .chart-card,
 .insights-section,
+.hidden-story-section,
 .recent-posts-section {
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
@@ -992,6 +1124,7 @@ onBeforeUnmount(() => {
   .metric-card,
   .chart-card,
   .insights-section,
+  .hidden-story-section,
   .recent-posts-section {
     transition: none;
   }
@@ -1005,6 +1138,7 @@ onBeforeUnmount(() => {
   .metric-card:hover,
   .chart-card:hover,
   .insights-section:hover,
+  .hidden-story-section:hover,
   .recent-posts-section:hover {
     transform: none;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
@@ -1133,8 +1267,13 @@ onBeforeUnmount(() => {
     padding: 1rem;
   }
 
-  .insights-section {
+  .insights-section,
+  .hidden-story-section {
     padding: 1rem;
+  }
+
+  .hidden-story-actions {
+    flex-direction: column;
   }
 }
 </style>

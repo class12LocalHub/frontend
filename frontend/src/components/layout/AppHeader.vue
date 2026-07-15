@@ -38,7 +38,6 @@ import MobileMenu from './MobileMenu.vue'
   padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
 }
 
@@ -49,6 +48,7 @@ import MobileMenu from './MobileMenu.vue'
 .app-header__nav {
   display: flex;
   gap: 1.1rem;
+  margin-left: auto;
 }
 
 .app-header__nav a {

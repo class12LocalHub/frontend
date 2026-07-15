@@ -1,13 +1,19 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import PostForm from '../components/post/PostForm.vue'
 import { createPost } from '../services/postService.js'
 
 const router = useRouter()
+const route = useRoute()
 const submitting = ref(false)
 const infoMessage = ref('')
 const errorMessage = ref('')
+
+const initialPost = computed(() => {
+  const category = route.query.category
+  return category ? { category } : {}
+})
 
 const handleSubmit = async (postData) => {
   if (submitting.value) return
@@ -55,7 +61,7 @@ const handleCancel = () => {
         <h1>게시글 작성</h1>
       </div>
 
-      <PostForm mode="create" :submitting="submitting" @submit="handleSubmit" @cancel="handleCancel" />
+      <PostForm mode="create" :initialPost="initialPost" :submitting="submitting" @submit="handleSubmit" @cancel="handleCancel" />
 
       <p v-if="errorMessage" class="submission-error">{{ errorMessage }}</p>
     </div>

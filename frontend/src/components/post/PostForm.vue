@@ -73,7 +73,7 @@ const resetForm = (source = {}) => {
 watch(
   () => props.initialPost,
   (next) => {
-    if (props.mode === 'edit' && next) {
+    if (next && (props.mode === 'edit' || (props.mode === 'create' && next.category))) {
       resetForm(next)
     }
   },
