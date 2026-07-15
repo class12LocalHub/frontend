@@ -1,10 +1,11 @@
 import api from './api'
+import { toApiCategory } from '../utils/categoryConverter.js'
 
 export async function getMapPois(params = {}) {
   const normalizedParams = { ...params }
 
-  if (normalizedParams.category === '축제/공연행사') {
-    normalizedParams.category = '축제공연행사'
+  if (normalizedParams.category) {
+    normalizedParams.category = toApiCategory(normalizedParams.category)
   }
 
   const response = await api.get('/api/map/pois', { params: normalizedParams })

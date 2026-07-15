@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
+import { getLocationSuggestions, getLocationById } from '../../services/locationsService.js'
 
 const props = defineProps({
   mode: {
@@ -35,6 +36,8 @@ const form = reactive({
   password: '',
   tagInput: '',
   custom_tags: [],
+  location_id: null,
+  location_keyword: '',
 })
 
 const errors = reactive({
@@ -45,6 +48,11 @@ const errors = reactive({
   password: '',
 })
 
+const locationSuggestions = ref([])
+const selectedLocation = ref(null)
+const searchingLocation = ref(false)
+let debounceTimer = null
+
 const resetForm = (source = {}) => {
   form.title = source.title ?? ''
   form.category = source.category ?? ''
@@ -52,9 +60,25 @@ const resetForm = (source = {}) => {
   form.password = ''
   form.tagInput = ''
   form.custom_tags = Array.isArray(source.custom_tags) ? [...source.custom_tags] : []
+  form.location_id = source.location_id ?? null
+  form.location_keyword = ''
+  locationSuggestions.value = []
+  selectedLocation.value = null
   Object.keys(errors).forEach((key) => {
     errors[key] = ''
   })
+
+  // Load existing location if editing
+  if (props.mode === 'edit' && source.location_id) {
+    loadExistingLocation(source.location_id)
+  }
+}
+
+const loadExistingLocation = async (locationId) => {
+  const location = await getLocationById(locationId)
+  if (location) {
+    selectedLocation.value = location
+  }
 }
 
 watch(
@@ -68,6 +92,50 @@ watch(
 )
 
 const trimmedValue = (value) => String(value ?? '').trim()
+
+const searchLocations = async () => {
+  const keyword = form.location_keyword.trim()
+  if (!keyword) {
+    locationSuggestions.value = []
+    return
+  }
+
+  searchingLocation.value = true
+  const results = await getLocationSuggestions(keyword, 20)
+  locationSuggestions.value = results
+  searchingLocation.value = false
+}
+
+const handleLocationInput = () => {
+  clearTimeout(debounceTimer)
+  locationSuggestions.value = []
+
+  const keyword = form.location_keyword.trim()
+  if (!keyword) {
+    locationSuggestions.value = []
+    return
+  }
+
+  debounceTimer = setTimeout(() => {
+    searchLocations()
+  }, 300)
+}
+
+const selectLocation = (location) => {
+  selectedLocation.value = location
+  form.location_id = location.id
+  form.category = location.category
+  form.location_keyword = ''
+  locationSuggestions.value = []
+}
+
+const clearLocation = () => {
+  selectedLocation.value = null
+  form.location_id = null
+  form.location_keyword = ''
+  locationSuggestions.value = []
+  // Keep form.category unchanged
+}
 
 const addTagsFromInput = () => {
   const raw = form.tagInput || ''
@@ -174,7 +242,7 @@ const handleSubmit = () => {
     password: trimmedValue(form.password),
     category: form.category,
     custom_tags: [...form.custom_tags],
-    location_id: null,
+    location_id: form.location_id,
     image_url: null,
   })
 }
@@ -185,6 +253,7 @@ const handleCancel = () => {
 
 const titleLength = computed(() => trimmedValue(form.title).length)
 const titleLimit = 200
+
 </script>
 
 <template>
@@ -211,13 +280,54 @@ const titleLimit = 200
         <label class="form-label" for="category">
           카테고리 <span class="required">*</span>
         </label>
-        <select id="category" v-model="form.category">
+        <select id="category" v-model="form.category" :disabled="!!selectedLocation">
           <option value="" disabled>카테고리를 선택해주세요.</option>
           <option v-for="category in categories" :key="category" :value="category">
             {{ category }}
           </option>
         </select>
+        <p v-if="selectedLocation" class="field-hint">선택한 장소에 따라 자동 설정됩니다.</p>
         <p v-if="errors.category" class="field-error">{{ errors.category }}</p>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="location">
+          장소
+        </label>
+        <div v-if="selectedLocation" class="location-selected">
+          <div class="location-info">
+            <div class="location-name">{{ selectedLocation.name }}</div>
+            <div class="location-address">{{ selectedLocation.address }}</div>
+            <div class="location-category">{{ selectedLocation.category }}</div>
+          </div>
+          <button type="button" class="location-clear-btn" @click="clearLocation">선택 해제</button>
+        </div>
+        <div v-else class="location-search">
+          <input
+            id="location"
+            type="text"
+            v-model="form.location_keyword"
+            @input="handleLocationInput"
+            placeholder="장소명 또는 초성으로 검색해보세요."
+          />
+          <div v-if="locationSuggestions.length > 0" class="location-suggestions">
+            <button
+              v-for="location in locationSuggestions"
+              :key="location.id"
+              type="button"
+              class="location-suggestion-item"
+              @click="selectLocation(location)"
+            >
+              <div class="location-name-small">{{ location.name }}</div>
+              <div class="location-address-small">{{ location.address }}</div>
+              <div class="location-category-small">{{ location.category }}</div>
+            </button>
+          </div>
+          <div v-else-if="searchingLocation" class="location-status">검색 중...</div>
+          <div v-else-if="form.location_keyword && locationSuggestions.length === 0" class="location-status">
+            검색 결과가 없습니다.
+          </div>
+        </div>
       </div>
 
       <div class="form-field">
@@ -352,6 +462,12 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgba(14, 118, 255, 0.08);
 }
 
+select:disabled {
+  background: #f8fafc;
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
 .field-meta {
   display: flex;
   justify-content: flex-end;
@@ -418,6 +534,131 @@ textarea:focus {
   color: var(--color-danger);
   font-size: 0.95rem;
   margin-top: -0.1rem;
+}
+
+.field-hint {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin-top: -0.1rem;
+}
+
+.location-selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(14, 118, 255, 0.16);
+  background: rgba(14, 118, 255, 0.04);
+  border-radius: 0.85rem;
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-name {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.location-address {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin-top: 0.25rem;
+}
+
+.location-category {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.location-clear-btn {
+  min-width: 96px;
+  height: 40px;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.location-clear-btn:hover {
+  background: #f8fafc;
+}
+
+.location-search {
+  position: relative;
+}
+
+.location-search input {
+  width: 100%;
+}
+
+.location-suggestions {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.location-suggestion-item {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 150ms ease;
+}
+
+.location-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.location-suggestion-item:hover {
+  background: #f8fafc;
+}
+
+.location-name-small {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.location-address-small {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-top: 0.2rem;
+}
+
+.location-category-small {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.location-status {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
 .form-actions {

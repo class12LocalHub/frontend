@@ -5,6 +5,8 @@ import MapCanvas from '../components/map/MapCanvas.vue'
 import MapCategoryFilter from '../components/map/MapCategoryFilter.vue'
 import PlaceList from '../components/map/PlaceList.vue'
 import { getMapPois } from '../services/mapService.js'
+import { getLocationSuggestions } from '../services/locationsService.js'
+import { toApiCategory, toDisplayCategory } from '../utils/categoryConverter.js'
 
 const categories = [
   '전체',
@@ -49,16 +51,6 @@ const normalizeCategory = (queryValue) => {
   return aliasMap[normalized] || '전체'
 }
 
-const toApiCategory = (displayCategory) => {
-  if (displayCategory === '축제/공연행사') return '축제공연행사'
-  return displayCategory
-}
-
-const toDisplayCategory = (value) => {
-  if (value === '축제공연행사') return '축제/공연행사'
-  return value || '기타'
-}
-
 const getInitialCategory = () => normalizeCategory(route.query.category)
 
 const selectedCategory = ref(getInitialCategory())
@@ -74,13 +66,21 @@ const searchInput = ref('')
 const loading = ref(false)
 const error = ref('')
 const placeListSection = ref(null)
+const isSearching = ref(false)
+const searchResults = ref([])
+const isFromSearch = ref(false)
+const centerCoordinates = ref(null)
 
 watch(
   () => route.query.category,
   (category) => {
     selectedCategory.value = normalizeCategory(category)
     page.value = 1
-    loadPlaces()
+    // Only reload if not from a location search selection
+    if (!isFromSearch.value) {
+      loadPlaces()
+    }
+    isFromSearch.value = false
   }
 )
 
@@ -126,7 +126,12 @@ const loadPlaces = async () => {
   }
 }
 
-const filteredPlaces = computed(() => places.value)
+const filteredPlaces = computed(() => {
+  if (isSearching.value || searchResults.value.length > 0) {
+    return searchResults.value
+  }
+  return places.value
+})
 
 const handleCategorySelected = (category) => {
   selectedCategory.value = category
@@ -141,10 +146,42 @@ const handleSelectPlace = (placeId) => {
   selectedPlaceId.value = placeId
 }
 
-const handleSearch = () => {
-  keyword.value = searchInput.value.trim()
-  page.value = 1
-  loadPlaces()
+const handleSelectPlaceFromSearch = async (place) => {
+  selectedPlaceId.value = place.id
+  isFromSearch.value = true
+  // Auto-select the category for this place
+  selectedCategory.value = toDisplayCategory(place.category)
+  // Move map to the place coordinates
+  centerCoordinates.value = {
+    latitude: place.latitude,
+    longitude: place.longitude,
+  }
+  // Close search results
+  isSearching.value = false
+  searchResults.value = []
+  searchInput.value = ''
+}
+
+const handleSearch = async () => {
+  const searchTerm = searchInput.value.trim()
+  if (!searchTerm) {
+    isSearching.value = false
+    searchResults.value = []
+    keyword.value = ''
+    page.value = 1
+    await loadPlaces()
+    return
+  }
+
+  isSearching.value = true
+  try {
+    searchResults.value = await getLocationSuggestions(searchTerm, 20)
+  } catch (err) {
+    console.error('검색 실패:', err)
+    searchResults.value = []
+  } finally {
+    isSearching.value = false
+  }
 }
 
 const goToPage = (pageNumber) => {
@@ -215,7 +252,7 @@ onMounted(() => {
             <div class="map-state">{{ error }}</div>
           </template>
           <template v-else-if="filteredPlaces.length">
-            <MapCanvas :places="filteredPlaces" :selectedPlaceId="selectedPlaceId" @select-place="handleSelectPlace" />
+            <MapCanvas :places="filteredPlaces" :selectedPlaceId="selectedPlaceId" :centerCoordinates="centerCoordinates" @select-place="handleSelectPlace" />
           </template>
           <template v-else>
             <div class="map-state">표시할 장소가 없습니다.</div>
@@ -225,8 +262,14 @@ onMounted(() => {
         <div class="map-guide">
           <div class="map-guide__text">
             <p>마커를 클릭하면 장소 정보를 확인할 수 있습니다.</p>
-            <p class="map-guide__summary">
+            <p v-if="!isSearching && searchResults.length === 0" class="map-guide__summary">
               총 {{ total }}개 장소, 페이지 {{ page }} / {{ totalPages }}
+            </p>
+            <p v-else-if="isSearching" class="map-guide__summary">
+              검색 중입니다...
+            </p>
+            <p v-else class="map-guide__summary">
+              {{ searchResults.length }}개 검색 결과
             </p>
           </div>
 
@@ -253,10 +296,10 @@ onMounted(() => {
           ref="placeListSection"
           :places="filteredPlaces"
           :selectedPlaceId="selectedPlaceId"
-          @select-place="handleSelectPlace"
+          @select-place="isSearching || searchResults.length > 0 ? handleSelectPlaceFromSearch($event) : handleSelectPlace($event.id)"
         />
 
-        <div v-if="isPlaceListOpen && totalPages > 1" class="pagination-bar">
+        <div v-if="isPlaceListOpen && totalPages > 1 && !isSearching && searchResults.length === 0" class="pagination-bar">
           <button
             type="button"
             class="pagination-bar__button"

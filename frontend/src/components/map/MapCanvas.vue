@@ -19,6 +19,7 @@ const customIcon = L.icon({
 const props = defineProps({
   places: Array,
   selectedPlaceId: Number,
+  centerCoordinates: Object, // { latitude, longitude }
 })
 
 const emit = defineEmits(['select-place'])
@@ -98,6 +99,17 @@ watch(
   (selectedId) => {
     const place = props.places.find((p) => p.id === selectedId)
     flyToPlace(place)
+  }
+)
+
+watch(
+  () => props.centerCoordinates,
+  (coords) => {
+    if (coords && coords.latitude && coords.longitude && mapInstance.value) {
+      mapInstance.value.flyTo([Number(coords.latitude), Number(coords.longitude)], 14, {
+        duration: 0.7,
+      })
+    }
   }
 )
 </script>
