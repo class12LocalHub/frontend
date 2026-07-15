@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deletePost, getPostById } from '../services/postService.js'
+import { getLocationById } from '../services/locationsService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,7 +11,6 @@ const postId = computed(() => Number(route.params.id ?? 0))
 const post = ref(null)
 const status = ref('loading')
 const errorMessage = ref('')
-const locationError = ref('')
 const isModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
@@ -22,7 +22,6 @@ const formattedContent = computed(() => post.value?.content ?? '')
 const loadPost = async () => {
   status.value = 'loading'
   errorMessage.value = ''
-  locationError.value = ''
   post.value = null
 
   try {
@@ -51,7 +50,7 @@ const loadPost = async () => {
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
-      location: result.location ?? null,
+      location: locationData,
     }
 
     status.value = 'ready'
@@ -131,16 +130,22 @@ const goToEdit = () => {
 }
 
 const goToLocation = () => {
-  locationError.value = ''
-  const sourceId = String(post.value?.location?.source_id ?? '').trim()
-
-  if (!sourceId) {
-    locationError.value = '연결 장소의 지도 정보를 찾을 수 없습니다.'
+  // Try to find location ID from multiple sources
+  const locationId = post.value?.location_id || post.value?.location?.id
+  
+  if (!locationId) {
     return
   }
-
-  router.push({ name: 'map', query: { poiId: sourceId } })
+  
+  router.push({
+    path: '/map',
+    query: { locationId: String(locationId) }
+  })
 }
+
+const hasLocation = computed(() => {
+  return Boolean(post.value?.location_id || post.value?.location?.id)
+})
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -187,33 +192,20 @@ const displayCategory = (category) => {
               <h1>{{ post.title }}</h1>
               <div class="meta-row">
                 <span class="badge">{{ displayCategory(post.category) }}</span>
-                <router-link 
-                  v-if="post.location" 
-                  :to="`/map?locationId=${post.location.id}`"
+                <button 
+                  v-if="hasLocation"
+                  type="button"
                   class="location-badge" 
-                  :title="post.location.address"
+                  @click="goToLocation"
                 >
-                  📍 {{ post.location.name }}
-                </router-link>
+                  📍 {{ post.location?.name || '장소 정보' }}
+                </button>
                 <span>· {{ formatDate(post.created_at) }}</span>
                 <span>· 조회수 {{ post.view_count }}</span>
               </div>
             </div>
           </div>
 
-<<<<<<< HEAD
-          <div v-if="post.location" class="location-section">
-            <button type="button" class="location-info-card" @click="goToLocation">
-              <div class="location-header">관련 장소</div>
-              <div class="location-name">{{ post.location.name }}</div>
-              <div class="location-address">{{ post.location.address }}</div>
-              <div class="location-category">{{ post.location.category }}</div>
-            </button>
-            <p v-if="locationError" class="location-error" role="alert">{{ locationError }}</p>
-          </div>
-
-=======
->>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
           <div class="tag-row">
             <button v-for="tag in post.custom_tags" :key="tag" type="button" class="tag-pill">
               #{{ tag }}
@@ -345,7 +337,6 @@ const displayCategory = (category) => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
   border: 1px solid transparent;
 }
@@ -545,66 +536,6 @@ const displayCategory = (category) => {
   font-size: 0.92rem;
 }
 
-<<<<<<< HEAD
-.location-section {
-  margin-bottom: 1rem;
-}
-
-.location-info-card {
-  display: block;
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid rgba(14, 118, 255, 0.16);
-  background: rgba(14, 118, 255, 0.04);
-  border-radius: 0.85rem;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.location-info-card:hover,
-.location-info-card:focus-visible {
-  border-color: rgba(14, 118, 255, 0.4);
-  background: rgba(14, 118, 255, 0.08);
-}
-
-.location-error {
-  margin: 0.65rem 0 0;
-  color: #d14343;
-  font-size: 0.9rem;
-}
-
-.location-header {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.location-name {
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 0.25rem;
-}
-
-.location-address {
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  margin-bottom: 0.5rem;
-}
-
-.location-category {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-=======
->>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
 @media (max-width: 720px) {
   .post-card {
     padding: 1.2rem;

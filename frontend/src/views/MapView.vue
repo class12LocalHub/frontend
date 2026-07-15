@@ -54,6 +54,7 @@ const getInitialCategory = () => normalizeCategory(route.query.category)
 
 const selectedCategory = ref(getInitialCategory())
 const selectedPlaceId = ref(null)
+const selectedPlace = ref(null)  // For displaying detailed info
 const isPlaceListOpen = ref(false)
 const places = ref([])
 const page = ref(1)
@@ -69,6 +70,7 @@ const isSearching = ref(false)
 const searchResults = ref([])
 const isFromSearch = ref(false)
 const centerCoordinates = ref(null)
+const isLoadingLocationFromQuery = ref(false)  // Flag to prevent category watcher from overwriting selectedPlace
 
 const normalizePoiId = (value) => {
   const normalized = String(value ?? '').trim()
@@ -117,8 +119,8 @@ watch(
   (category) => {
     selectedCategory.value = normalizeCategory(category)
     page.value = 1
-    // Only reload if not from a location search selection
-    if (!isFromSearch.value) {
+    // Only reload if not from a location search selection or loading from query
+    if (!isFromSearch.value && !isLoadingLocationFromQuery.value) {
       loadPlaces()
     }
     isFromSearch.value = false
@@ -130,6 +132,67 @@ watch(
   (poiId) => {
     selectPoiFromQuery(poiId)
   },
+)
+
+// Watch for selectedPlaceId changes and update selectedPlace
+watch(
+  () => selectedPlaceId.value,
+  (placeId) => {
+    if (!placeId) {
+      selectedPlace.value = null
+      return
+    }
+    const place = places.value.find((p) => p.id === placeId)
+    if (place) {
+      selectedPlace.value = place
+    }
+  },
+)
+
+// Watch for locationId query parameter changes
+watch(
+  () => route.query.locationId,
+  async (locationId) => {
+    if (!locationId) {
+      isLoadingLocationFromQuery.value = false
+      return
+    }
+    
+    isLoadingLocationFromQuery.value = true
+    try {
+      const location = await getLocationById(Number(locationId))
+      if (location) {
+        // Set category from location
+        selectedCategory.value = toDisplayCategory(location.category)
+        
+        // Set center coordinates for map
+        centerCoordinates.value = {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        }
+        
+        // Set selectedPlace directly from location
+        const normalizedLocation = normalizePlace(location)
+        selectedPlace.value = normalizedLocation
+        
+        // Set selectedPlaceId
+        selectedPlaceId.value = location.id
+        
+        // Add location to places array if not already there
+        if (!places.value.find(p => p.id === location.id)) {
+          places.value.unshift(normalizedLocation)
+        }
+        
+        // Open place list to show the selected location
+        isPlaceListOpen.value = true
+      }
+    } catch (err) {
+      console.warn('Failed to load location from query:', err)
+    } finally {
+      isLoadingLocationFromQuery.value = false
+    }
+  },
+  { immediate: true },
 )
 
 const loadPlaces = async () => {
@@ -184,6 +247,23 @@ const filteredPlaces = computed(() => {
     return searchResults.value
   }
   return places.value
+})
+
+// Combine places with selectedPlace to ensure selectedPlace is always shown
+const displayPlaces = computed(() => {
+  const baseList = filteredPlaces.value
+  if (!selectedPlace.value) {
+    return baseList
+  }
+  
+  // Check if selectedPlace is already in the list
+  const exists = baseList.some(p => p.id === selectedPlace.value.id)
+  if (exists) {
+    return baseList
+  }
+  
+  // Add selectedPlace to the beginning of the list
+  return [selectedPlace.value, ...baseList]
 })
 
 const handleCategorySelected = (category) => {
@@ -279,42 +359,6 @@ onMounted(async () => {
   searchInput.value = ''
   keyword.value = ''
 
-  // Handle locationId from query parameter
-  const locationId = route.query.locationId
-  if (locationId) {
-    try {
-      const location = await getLocationById(Number(locationId))
-      if (location) {
-        // Set category from location
-        selectedCategory.value = toDisplayCategory(location.category)
-        
-        // Set center coordinates for map
-        centerCoordinates.value = {
-          latitude: location.latitude,
-          longitude: location.longitude,
-        }
-        
-        // Select the place on the map
-        selectedPlaceId.value = location.id
-        
-        // Add location to places array if not already there
-        if (!places.value.find(p => p.id === location.id)) {
-          places.value.unshift({
-            ...location,
-            category: toDisplayCategory(location.category),
-            latitude: location.latitude ?? null,
-            longitude: location.longitude ?? null,
-          })
-        }
-        
-        // Open place list to show the selected location
-        isPlaceListOpen.value = true
-      }
-    } catch (err) {
-      console.warn('Failed to load location from query:', err)
-    }
-  }
-
   await loadPlaces()
 })
 </script>
@@ -341,10 +385,11 @@ onMounted(async () => {
           <template v-else-if="error">
             <div class="map-state">{{ error }}</div>
           </template>
-          <template v-else-if="filteredPlaces.length">
+          <template v-else-if="displayPlaces.length">
             <MapCanvas
-              :places="filteredPlaces"
+              :places="displayPlaces"
               :selectedPlaceId="selectedPlaceId"
+              :selectedPlace="selectedPlace"
               :centerCoordinates="centerCoordinates"
               @select-place="handleSelectPlace"
             />
@@ -383,7 +428,7 @@ onMounted(async () => {
         <PlaceList
           v-if="isPlaceListOpen"
           ref="placeListSection"
-          :places="filteredPlaces"
+          :places="displayPlaces"
           :selectedPlaceId="selectedPlaceId"
           @select-place="
             isSearching || searchResults.length > 0
@@ -391,6 +436,20 @@ onMounted(async () => {
               : handleSelectPlace($event.id)
           "
         />
+
+        <!-- Selected Place Detail Card -->
+        <div
+          v-if="selectedPlace && isPlaceListOpen"
+          class="selected-place-card"
+        >
+          <div class="selected-place-card__header">
+            <h3>{{ selectedPlace.name }}</h3>
+          </div>
+          <div class="selected-place-card__body">
+            <p class="selected-place-card__category">{{ selectedPlace.category }}</p>
+            <p class="selected-place-card__address">{{ selectedPlace.address }}</p>
+          </div>
+        </div>
 
         <div
           v-if="isPlaceListOpen && totalPages > 1 && !isSearching && searchResults.length === 0"
@@ -564,6 +623,45 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.selected-place-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.06);
+  margin-top: 0.75rem;
+}
+
+.selected-place-card__header {
+  margin-bottom: 0.75rem;
+}
+
+.selected-place-card__header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-text);
+}
+
+.selected-place-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selected-place-card__category {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.selected-place-card__address {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  line-height: 1.4;
 }
 
 .pagination-bar__button {

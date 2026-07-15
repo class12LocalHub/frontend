@@ -19,6 +19,7 @@ const customIcon = L.icon({
 const props = defineProps({
   places: Array,
   selectedPlaceId: Number,
+  selectedPlace: Object,  // For displaying selected place even if not in places array
   centerCoordinates: Object, // { latitude, longitude }
 })
 
@@ -70,6 +71,29 @@ const renderMarkers = () => {
 
     markers.value.push(marker)
   })
+
+  // Add selectedPlace marker if it's not in the places array
+  if (props.selectedPlace && !props.places.find(p => p.id === props.selectedPlace.id)) {
+    const latitude = Number(props.selectedPlace.latitude)
+    const longitude = Number(props.selectedPlace.longitude)
+
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      const marker = L.marker([latitude, longitude], {
+        icon: customIcon,
+      })
+        .addTo(mapInstance.value)
+        .bindPopup(`
+          <strong>${props.selectedPlace.name}</strong><br />
+          ${props.selectedPlace.category}<br />
+          ${props.selectedPlace.address}
+        `)
+        .on('click', () => {
+          emit('select-place', props.selectedPlace.id)
+        })
+
+      markers.value.push(marker)
+    }
+  }
 }
 
 onMounted(() => {
@@ -95,6 +119,14 @@ watch(
 )
 
 watch(
+  () => props.selectedPlace,
+  () => {
+    renderMarkers()
+  },
+  { deep: true }
+)
+
+watch(
   () => props.selectedPlaceId,
   (selectedId) => {
     const place = props.places.find((p) => p.id === selectedId)
@@ -105,12 +137,13 @@ watch(
 watch(
   () => props.centerCoordinates,
   (coords) => {
-    if (coords && coords.latitude && coords.longitude && mapInstance.value) {
+    if (coords && Number.isFinite(coords.latitude) && Number.isFinite(coords.longitude) && mapInstance.value) {
       mapInstance.value.flyTo([Number(coords.latitude), Number(coords.longitude)], 14, {
         duration: 0.7,
       })
     }
-  }
+  },
+  { immediate: true }
 )
 </script>
 

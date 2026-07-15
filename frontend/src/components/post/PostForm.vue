@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { getLocationSuggestions } from '../../services/locationsService.js'
+import { toApiCategory, toDisplayCategory, getApiCategories } from '../../utils/categoryConverter.js'
 
 const props = defineProps({
   mode: {
@@ -19,15 +20,8 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'cancel'])
 
-const categories = [
-  '관광지',
-  '레포츠',
-  '문화시설',
-  '쇼핑',
-  '숙박',
-  '여행코스',
-  '축제/공연행사',
-]
+// Use API categories directly - store values as API format
+const categories = getApiCategories()
 
 const form = reactive({
   title: '',
@@ -55,7 +49,6 @@ let debounceTimer = null
 
 const resetForm = (source = {}) => {
   form.title = source.title ?? ''
-  form.category = source.category ?? ''
   form.content = source.content ?? ''
   form.password = ''
   form.tagInput = ''
@@ -64,6 +57,14 @@ const resetForm = (source = {}) => {
   form.location_keyword = ''
   locationSuggestions.value = []
   selectedLocation.value = props.mode === 'edit' ? (source.location ?? null) : null
+  
+  // Set category: use location's category if exists, otherwise use post's category
+  if (source.location && source.location.category) {
+    form.category = toApiCategory(source.location.category)
+  } else {
+    form.category = source.category ?? ''
+  }
+  
   Object.keys(errors).forEach((key) => {
     errors[key] = ''
   })
@@ -112,7 +113,7 @@ const handleLocationInput = () => {
 const selectLocation = (location) => {
   selectedLocation.value = location
   form.location_id = location.id
-  form.category = location.category
+  form.category = toApiCategory(location.category)
   form.location_keyword = ''
   locationSuggestions.value = []
 }
@@ -265,20 +266,6 @@ const titleLimit = 200
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="category">
-          카테고리 <span class="required">*</span>
-        </label>
-        <select id="category" v-model="form.category" :disabled="!!selectedLocation">
-          <option value="" disabled>카테고리를 선택해주세요.</option>
-          <option v-for="category in categories" :key="category" :value="category">
-            {{ category }}
-          </option>
-        </select>
-        <p v-if="selectedLocation" class="field-hint">선택한 장소에 따라 자동 설정됩니다.</p>
-        <p v-if="errors.category" class="field-error">{{ errors.category }}</p>
-      </div>
-
-      <div class="form-field">
         <label class="form-label" for="location">
           장소
         </label>
@@ -316,6 +303,20 @@ const titleLimit = 200
             검색 결과가 없습니다.
           </div>
         </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="category">
+          카테고리 <span class="required">*</span>
+        </label>
+        <select id="category" v-model="form.category" :disabled="!!selectedLocation">
+          <option value="" disabled>카테고리를 선택해주세요.</option>
+          <option v-for="category in categories" :key="category" :value="category">
+            {{ toDisplayCategory(category) }}
+          </option>
+        </select>
+        <p v-if="selectedLocation" class="field-hint">선택한 장소에 따라 자동 설정됩니다.</p>
+        <p v-if="errors.category" class="field-error">{{ errors.category }}</p>
       </div>
 
       <div class="form-field">

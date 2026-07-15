@@ -6,6 +6,7 @@ import PostSearchBar from '../components/board/PostSearchBar.vue'
 import PostTable from '../components/board/PostTable.vue'
 import PaginationBar from '../components/board/PaginationBar.vue'
 import { getPosts } from '../services/postService.js'
+import { toApiCategory } from '../utils/categoryConverter.js'
 
 const router = useRouter()
 const categories = ['전체', '관광지', '레포츠', '문화시설', '쇼핑', '숙박', '여행코스', '축제/공연행사']
@@ -34,7 +35,7 @@ const loadPosts = async (page = 1) => {
     const params = {
       page,
       size: 10,
-      ...(selectedCategory.value !== '전체' ? { category: selectedCategory.value } : {}),
+      ...(selectedCategory.value !== '전체' ? { category: toApiCategory(selectedCategory.value) } : {}),
       ...(searchQuery.value.trim() ? { keyword: searchQuery.value.trim() } : {}),
     }
 

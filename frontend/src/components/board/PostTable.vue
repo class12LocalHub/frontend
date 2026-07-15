@@ -1,5 +1,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { toDisplayCategory } from '../../utils/categoryConverter.js'
+
 const props = defineProps({
   posts: Array,
 })
@@ -40,7 +42,7 @@ const formatDate = (dateString) => {
               {{ post.title }}
             </RouterLink>
           </td>
-          <td data-label="카테고리">{{ post.category }}</td>
+          <td data-label="카테고리">{{ toDisplayCategory(post.category) }}</td>
           <td data-label="작성일">{{ formatDate(post.created_at) }}</td>
           <td data-label="조회수">{{ post.view_count }}</td>
         </tr>
