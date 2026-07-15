@@ -4,14 +4,10 @@ import { useRoute } from 'vue-router'
 import MapCanvas from '../components/map/MapCanvas.vue'
 import MapCategoryFilter from '../components/map/MapCategoryFilter.vue'
 import PlaceList from '../components/map/PlaceList.vue'
-<<<<<<< HEAD
 
 import { getMapPoiById, getMapPois } from '../services/mapService.js'
-import { getLocationSuggestions } from '../services/locationsService.js'
-=======
-import { getMapPois } from '../services/mapService.js'
 import { getLocationSuggestions, getLocationById } from '../services/locationsService.js'
->>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
+
 import { toApiCategory, toDisplayCategory } from '../utils/categoryConverter.js'
 
 const categories = [

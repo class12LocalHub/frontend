@@ -34,8 +34,6 @@ const loadPost = async () => {
       return
     }
 
-<<<<<<< HEAD
-=======
     // Initialize location data
     let locationData = result.location || null
     
@@ -50,7 +48,6 @@ const loadPost = async () => {
     }
 
     // Set post with all data
->>>>>>> f91dba9 (메뉴 수정, 대시보드 수정)
     post.value = {
       ...result,
       custom_tags: result.custom_tags ?? [],
