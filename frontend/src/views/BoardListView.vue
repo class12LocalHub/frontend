@@ -1,52 +1,89 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CategoryFilter from '../components/board/CategoryFilter.vue'
 import PostSearchBar from '../components/board/PostSearchBar.vue'
 import PostTable from '../components/board/PostTable.vue'
 import PaginationBar from '../components/board/PaginationBar.vue'
-import { posts } from '../data/mockPosts.js'
+import { getPosts } from '../services/postService.js'
 
 const router = useRouter()
 const categories = ['전체', '관광지', '레포츠', '문화시설', '쇼핑', '숙박', '여행코스', '축제/공연행사']
+
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const currentPage = ref(1)
-const pageSize = 7
 
-const filteredPosts = computed(() => {
-  let filtered = posts
-
-  if (selectedCategory.value !== '전체') {
-    filtered = filtered.filter((post) => post.category === selectedCategory.value)
-  }
-
-  if (searchQuery.value.trim()) {
-    const keyword = searchQuery.value.trim().toLowerCase()
-    filtered = filtered.filter((post) => post.title.toLowerCase().includes(keyword))
-  }
-
-  return filtered
+const posts = ref([])
+const loading = ref(false)
+const error = ref(null)
+const pagination = ref({
+  total: 0,
+  page: 1,
+  size: 10,
+  total_pages: 0,
 })
 
-const paginatedPosts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredPosts.value.slice(start, start + pageSize)
+const totalPages = computed(() => pagination.value.total_pages || 0)
+
+const loadPosts = async (page = 1) => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const params = {
+      page,
+      size: 10,
+      ...(selectedCategory.value !== '전체' ? { category: selectedCategory.value } : {}),
+      ...(searchQuery.value.trim() ? { keyword: searchQuery.value.trim() } : {}),
+    }
+
+    const result = await getPosts(params)
+
+    posts.value = result.items ?? []
+    pagination.value = {
+      total: result.total ?? 0,
+      page: result.page ?? 1,
+      size: result.size ?? 10,
+      total_pages: result.total_pages ?? 0,
+    }
+    currentPage.value = result.page ?? page
+  } catch (err) {
+    console.error(err)
+    error.value = '게시글을 불러오지 못했습니다.'
+    posts.value = []
+    pagination.value = {
+      total: 0,
+      page: 1,
+      size: 10,
+      total_pages: 0,
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadPosts(1)
 })
 
-const totalPages = computed(() => Math.ceil(filteredPosts.value.length / pageSize))
+const handleSearchQueryUpdate = (value) => {
+  searchQuery.value = value
+}
 
 const handleSearch = () => {
   currentPage.value = 1
+  loadPosts(1)
 }
 
 const handleCategoryChange = (category) => {
   selectedCategory.value = category
   currentPage.value = 1
+  loadPosts(1)
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  loadPosts(page)
 }
 
 const goToCreate = () => {
@@ -76,8 +113,8 @@ const goToCreate = () => {
 
         <div class="search-row">
           <PostSearchBar
-            :searchQuery="searchQuery"
-            @update:search="(value) => (searchQuery.value = value)"
+            :search-query="searchQuery"
+            @update:search="handleSearchQueryUpdate"
             @search="handleSearch"
           />
         </div>
@@ -85,15 +122,29 @@ const goToCreate = () => {
     </div>
 
     <div class="board-list">
-      <template v-if="paginatedPosts.length">
-        <PostTable :posts="paginatedPosts" />
-      </template>
-      <template v-else>
-        <div class="empty-state">조건에 맞는 게시글이 없습니다.</div>
-      </template>
-    </div>
+  <template v-if="loading">
+    <div class="empty-state">게시글을 불러오는 중입니다...</div>
+  </template>
 
-    <PaginationBar v-if="totalPages > 1" :currentPage="currentPage" :totalPages="totalPages" @change:page="handlePageChange" />
+  <template v-else-if="error">
+    <div class="empty-state">{{ error }}</div>
+  </template>
+
+  <template v-else-if="posts.length">
+    <PostTable :posts="posts" />
+  </template>
+
+  <template v-else>
+    <div class="empty-state">등록된 게시글이 없습니다.</div>
+  </template>
+</div>
+
+<PaginationBar
+  v-if="totalPages > 1"
+  :current-page="currentPage"
+  :total-pages="totalPages"
+  @change:page="handlePageChange"
+/>
   </section>
 </template>
 
@@ -208,24 +259,6 @@ const goToCreate = () => {
   .filter-row,
   .search-row {
     width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .board-controls {
-    gap: 0.75rem;
-  }
-
-  .board-header-row {
-    gap: 0.75rem;
-  }
-
-  .board-title-group h1 {
-    font-size: 1.25rem;
-  }
-
-  .board-action-row {
-    gap: 0.75rem;
   }
 }
 

@@ -1,3 +1,15 @@
+import api from './api'
+
+export async function getPosts(params = {}) {
+  const response = await api.get('/api/posts', { params })
+  return response.data
+}
+
+export async function getPostById(postId) {
+  const response = await api.get(`/api/posts/${postId}`)
+  return response.data
+}
+
 export async function createPost(postData) {
   // TODO: 백엔드 연결 후 POST /api/posts 호출
   throw new Error('POST_API_NOT_CONNECTED')

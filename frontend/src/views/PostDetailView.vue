@@ -1,20 +1,59 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LikeButton from '../components/post/LikeButton.vue'
-import { posts } from '../data/mockPosts.js'
+import { getPostById } from '../services/postService.js'
 
 const route = useRoute()
 const router = useRouter()
-const postId = Number(route.params.id ?? 0)
+const postId = computed(() => Number(route.params.id ?? 0))
 
-const post = computed(() => posts.find((item) => item.id === postId))
+const post = ref(null)
+const status = ref('loading')
+const errorMessage = ref('')
 const isModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
 const deleteInfo = ref('')
 
 const formattedContent = computed(() => post.value?.content ?? '')
+
+const loadPost = async () => {
+  status.value = 'loading'
+  errorMessage.value = ''
+  post.value = null
+
+  try {
+    const result = await getPostById(postId.value)
+
+    if (!result || (typeof result === 'object' && Object.keys(result).length === 0)) {
+      status.value = 'not-found'
+      errorMessage.value = '게시글을 찾을 수 없습니다.'
+      return
+    }
+
+    post.value = {
+      ...result,
+      custom_tags: result.custom_tags ?? [],
+      like_count: result.like_count ?? 0,
+      liked: result.liked ?? false,
+    }
+    status.value = 'ready'
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      status.value = 'not-found'
+      errorMessage.value = '게시글을 찾을 수 없습니다.'
+    } else {
+      status.value = 'error'
+      errorMessage.value = '게시글을 불러오지 못했습니다.'
+    }
+    post.value = null
+  }
+}
+
+onMounted(() => {
+  loadPost()
+})
 
 const openDeleteModal = () => {
   deletePassword.value = ''
@@ -50,7 +89,7 @@ const goToBoard = () => {
 }
 
 const goToEdit = () => {
-  router.push(`/posts/${postId}/edit`)
+  router.push(`/posts/${postId.value}/edit`)
 }
 
 const formatDate = (dateString) => {
@@ -73,7 +112,20 @@ const formatDate = (dateString) => {
         <span>게시글 상세</span>
       </nav>
 
-      <template v-if="post">
+      <template v-if="status === 'loading'">
+        <div class="empty-card">
+          <p>게시글을 불러오는 중입니다.</p>
+        </div>
+      </template>
+
+      <template v-else-if="status === 'error'">
+        <div class="empty-card">
+          <p>{{ errorMessage }}</p>
+          <button type="button" class="button-secondary" @click="goToBoard">게시판으로 돌아가기</button>
+        </div>
+      </template>
+
+      <template v-else-if="status === 'ready' && post">
         <article class="post-card">
           <div class="post-header">
             <div>
