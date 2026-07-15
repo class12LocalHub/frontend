@@ -3,13 +3,13 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
 const categories = [
-  { id: 'tourist', name: '관광지', icon: '🏛️', description: '인기 명소와 추천 여행지를 둘러보세요.' },
-  { id: 'leisure', name: '레포츠', icon: '🚴', description: '야외 활동과 액티비티 정보를 확인하세요.' },
-  { id: 'culture', name: '문화시설', icon: '🎨', description: '전시와 문화 공간을 빠르게 찾아보세요.' },
-  { id: 'shopping', name: '쇼핑', icon: '🛍️', description: '핫플 상권과 쇼핑 포인트를 탐색해보세요.' },
-  { id: 'accommodation', name: '숙박', icon: '🏨', description: '지역 숙소 정보를 한눈에 확인하세요.' },
-  { id: 'course', name: '여행코스', icon: '🗺️', description: '효율적인 일정 코스를 만들어보세요.' },
-  { id: 'festival', name: '축제/공연행사', icon: '🎭', description: '다가오는 행사를 미리 확인해보세요.' },
+  { id: 'tourist', name: '관광지', icon: '🏛️' },
+  { id: 'leisure', name: '레포츠', icon: '🚴' },
+  { id: 'culture', name: '문화시설', icon: '🎨' },
+  { id: 'shopping', name: '쇼핑', icon: '🛍️',  },
+  { id: 'accommodation', name: '숙박', icon: '🏨' },
+  { id: 'course', name: '여행코스', icon: '🗺️'  },
+  { id: 'festival', name: '축제/공연행사', icon: '🎭'  },
 ]
 
 const clonedCategories = computed(() => {

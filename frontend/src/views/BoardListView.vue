@@ -97,8 +97,8 @@ const goToCreate = () => {
     <div class="board-controls">
       <div class="board-header-row">
         <div class="board-title-group">
-          <h1>게시판</h1>
-          <p class="board-description">서울 여행 정보와 꿀팁을 공유하고 편하게 찾아보세요.</p>
+          <h1 class="page-title">게시판</h1>
+          <p class="page-description">서울 여행 정보와 꿀팁을 공유하고 편하게 찾아보세요.</p>
         </div>
         <button type="button" class="write-button" @click="goToCreate">글쓰기</button>
       </div>
@@ -189,18 +189,6 @@ const goToCreate = () => {
   box-sizing: border-box;
 }
 
-.board-title-group h1 {
-  margin: 0 0 0.3rem;
-  font-size: 1.4rem;
-}
-
-.board-description {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
 .board-action-row {
   display: flex;
   align-items: flex-start;
@@ -270,10 +258,6 @@ const goToCreate = () => {
 
   .board-header-row {
     gap: 0.75rem;
-  }
-
-  .board-title-group h1 {
-    font-size: 1.25rem;
   }
 
   .board-action-row {

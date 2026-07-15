@@ -411,8 +411,8 @@ onBeforeUnmount(() => {
     <div class="dashboard-container">
       <div class="dashboard-header">
         <div>
-          <h1>지역 데이터 대시보드</h1>
-          <p>서울의 장소와 지역 이야기를 한눈에 확인하세요.</p>
+          <h1 class="page-title">지역 데이터 대시보드</h1>
+          <p class="page-description">서울의 장소와 지역 이야기를 한눈에 확인하세요.</p>
         </div>
       </div>
 
@@ -559,12 +559,11 @@ onBeforeUnmount(() => {
 .dashboard-view {
   display: flex;
   justify-content: center;
-  padding: 1.5rem 1rem 2rem;
+  padding: 1.5rem 1.5rem 2rem;
 }
 
 .dashboard-container {
   width: 100%;
-  max-width: 1100px;
 }
 
 .dashboard-header {
@@ -574,19 +573,6 @@ onBeforeUnmount(() => {
   gap: 1rem;
   margin-bottom: 1.8rem;
   flex-wrap: wrap;
-}
-
-.dashboard-header h1 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.8rem, 2.1vw, 2.3rem);
-  color: #0f172a;
-}
-
-.dashboard-header p {
-  margin: 0;
-  color: var(--color-muted);
-  max-width: 680px;
-  font-size: 1rem;
 }
 
 /* 지표 카드 그리드 */
@@ -1219,10 +1205,6 @@ onBeforeUnmount(() => {
 @media (max-width: 560px) {
   .dashboard-header {
     gap: 0.75rem;
-  }
-
-  .dashboard-header h1 {
-    font-size: 1.6rem;
   }
 
   .metric-card {
