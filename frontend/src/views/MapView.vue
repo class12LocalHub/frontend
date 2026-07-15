@@ -341,6 +341,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  position: relative;
+  z-index: 0;
 }
 
 .map-view__grid {
@@ -376,6 +378,9 @@ onMounted(() => {
 .map-card--map {
   overflow: hidden;
   min-height: 500px;
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
 
 .map-guide {

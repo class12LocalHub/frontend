@@ -29,7 +29,7 @@ import MobileMenu from './MobileMenu.vue'
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 2000;
 }
 
 .app-header__inner {

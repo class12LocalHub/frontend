@@ -127,6 +127,8 @@ watch(
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: #f3f4f6;
+  position: relative;
+  z-index: 0;
 }
 
 .map-canvas__map {
