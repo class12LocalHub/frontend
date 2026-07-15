@@ -11,3 +11,8 @@ export async function getMapPois(params = {}) {
   const response = await api.get('/api/map/pois', { params: normalizedParams })
   return response.data
 }
+
+export async function getMapPoiById(poiId) {
+  const response = await api.get(`/api/map/pois/${poiId}`)
+  return response.data
+}

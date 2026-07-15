@@ -1,0 +1,2476 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "LocalHub API",
+        "description": "\uc11c\uc6b8 \uacf5\uacf5\ub370\uc774\ud130 \uae30\ubc18 \uc9c0\uc5ed \uc815\ubcf4 \uacf5\uc720 \ucee4\ubba4\ub2c8\ud2f0 API",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/posts": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "\uac8c\uc2dc\uae00 \uc791\uc131",
+                "operationId": "create_post_api_posts_post",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PostCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "\uac8c\uc2dc\uae00 \ubaa9\ub85d \uc870\ud68c",
+                "operationId": "get_posts_api_posts_get",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Category"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Keyword"
+                        }
+                    },
+                    {
+                        "name": "location_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Location Id"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "title": "Page"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "default": 10,
+                            "title": "Size"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/posts/{post_id}": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "\uac8c\uc2dc\uae00 \uc0c1\uc138 \uc870\ud68c",
+                "operationId": "get_post_api_posts__post_id__get",
+                "parameters": [
+                    {
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Post Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "\uac8c\uc2dc\uae00 \uc218\uc815",
+                "operationId": "update_post_api_posts__post_id__put",
+                "parameters": [
+                    {
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Post Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PostUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "\uac8c\uc2dc\uae00 \uc0ad\uc81c",
+                "operationId": "delete_post_api_posts__post_id__delete",
+                "parameters": [
+                    {
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Post Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PostPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostDeleteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/suggestions": {
+            "get": {
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "\uc7a5\uc18c \uc774\ub984 \uc790\ub3d9\uc644\uc131 \ubc0f \ucd08\uc131 \uac80\uc0c9",
+                "description": "\uc7a5\uc18c\uba85 \ub610\ub294 \ud55c\uae00 \ucd08\uc131\uc73c\ub85c \uc7a5\uc18c\ub97c \uac80\uc0c9\ud569\ub2c8\ub2e4.",
+                "operationId": "suggest_locations_api_locations_suggestions_get",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "\uc7a5\uc18c\uba85 \ub610\ub294 \ucd08\uc131",
+                            "examples": [
+                                "\u3131\u3142\u3131"
+                            ],
+                            "title": "Keyword"
+                        },
+                        "description": "\uc7a5\uc18c\uba85 \ub610\ub294 \ucd08\uc131"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 20,
+                            "minimum": 1,
+                            "description": "\ucd5c\ub300 \uac80\uc0c9 \uacb0\uacfc \uac1c\uc218",
+                            "default": 10,
+                            "title": "Limit"
+                        },
+                        "description": "\ucd5c\ub300 \uac80\uc0c9 \uacb0\uacfc \uac1c\uc218"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LocationSuggestionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/map/pois": {
+            "get": {
+                "tags": [
+                    "items"
+                ],
+                "summary": "List Map Pois",
+                "operationId": "list_map_pois_api_map_pois_get",
+                "parameters": [
+                    {
+                        "name": "place_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "default": "all",
+                            "title": "Place Type"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Category"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Keyword"
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Region"
+                        }
+                    },
+                    {
+                        "name": "bbox",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Bbox"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "title": "Page"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "default": 20,
+                            "title": "Size"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MapPoiListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/map/pois/{poi_id}": {
+            "get": {
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get Map Poi",
+                "operationId": "get_map_poi_api_map_pois__poi_id__get",
+                "parameters": [
+                    {
+                        "name": "poi_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Poi Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MapPoiDetail"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/map/filters": {
+            "get": {
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get Map Filters Api",
+                "operationId": "get_map_filters_api_api_map_filters_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MapFiltersResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations": {
+            "get": {
+                "tags": [
+                    "items"
+                ],
+                "summary": "List Locations Api",
+                "operationId": "list_locations_api_api_locations_get",
+                "parameters": [
+                    {
+                        "name": "place_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "default": "all",
+                            "title": "Place Type"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Category"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Keyword"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "title": "Page"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "default": 20,
+                            "title": "Size"
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Region"
+                        }
+                    },
+                    {
+                        "name": "bbox",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Bbox"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LocationListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/{location_id}": {
+            "get": {
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get Location Api",
+                "operationId": "get_location_api_api_locations__location_id__get",
+                "parameters": [
+                    {
+                        "name": "location_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Location Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MapPoiDetail"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "\ub300\uc2dc\ubcf4\ub4dc \ud1b5\uacc4 \uc870\ud68c",
+                "operationId": "get_dashboard_api_dashboard_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DashboardResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "\uce74\ud14c\uace0\ub9ac \ubaa9\ub85d \uc870\ud68c",
+                "operationId": "get_categories_api_categories_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryListResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat": {
+            "post": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "\ucc57\ubd07 \uc9c8\ubb38 \uc804\uc1a1",
+                "operationId": "chat_api_chat_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChatRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "\uc11c\ubc84 \uc0c1\ud0dc \ud655\uc778",
+                "operationId": "health_check_api_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object",
+                                    "title": "Response Health Check Api Health Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CategoryListResponse": {
+                "properties": {
+                    "categories": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Categories"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "categories"
+                ],
+                "title": "CategoryListResponse"
+            },
+            "ChatMessage": {
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "assistant",
+                            "system"
+                        ],
+                        "title": "Role"
+                    },
+                    "content": {
+                        "type": "string",
+                        "maxLength": 4000,
+                        "minLength": 1,
+                        "title": "Content"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "role",
+                    "content"
+                ],
+                "title": "ChatMessage"
+            },
+            "ChatRequest": {
+                "properties": {
+                    "messages": {
+                        "items": {
+                            "$ref": "#/components/schemas/ChatMessage"
+                        },
+                        "type": "array",
+                        "maxItems": 21,
+                        "title": "Messages"
+                    },
+                    "message": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message"
+                    },
+                    "history": {
+                        "items": {
+                            "$ref": "#/components/schemas/ChatMessage"
+                        },
+                        "type": "array",
+                        "maxItems": 20,
+                        "title": "History"
+                    }
+                },
+                "type": "object",
+                "title": "ChatRequest"
+            },
+            "ChatResponse": {
+                "properties": {
+                    "answer": {
+                        "type": "string",
+                        "title": "Answer"
+                    },
+                    "query_type": {
+                        "type": "string",
+                        "title": "Query Type",
+                        "default": "general"
+                    },
+                    "sources": {
+                        "items": {
+                            "$ref": "#/components/schemas/ChatSource"
+                        },
+                        "type": "array",
+                        "title": "Sources"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "answer"
+                ],
+                "title": "ChatResponse"
+            },
+            "ChatSource": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "location",
+                            "post"
+                        ],
+                        "title": "Type"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "type=location\uc774\uba74 TourAPI source_contentid(Map POI id), type=post\uc774\uba74 SQLite posts.id\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Name"
+                    },
+                    "title": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Title"
+                    },
+                    "category": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Category"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "type",
+                    "id"
+                ],
+                "title": "ChatSource"
+            },
+            "DashboardCategoryCount": {
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "title": "Count"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "category",
+                    "count"
+                ],
+                "title": "DashboardCategoryCount"
+            },
+            "DashboardResponse": {
+                "properties": {
+                    "region": {
+                        "type": "string",
+                        "title": "Region"
+                    },
+                    "total_locations": {
+                        "type": "integer",
+                        "title": "Total Locations"
+                    },
+                    "category_counts": {
+                        "items": {
+                            "$ref": "#/components/schemas/DashboardCategoryCount"
+                        },
+                        "type": "array",
+                        "title": "Category Counts"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "region",
+                    "total_locations",
+                    "category_counts"
+                ],
+                "title": "DashboardResponse"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LocationBase": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "TourAPI source_contentid. \uac8c\uc2dc\uae00 location_id(SQLite PK)\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "address": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Address"
+                    },
+                    "summary": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Summary"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Description"
+                    },
+                    "telephone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Telephone"
+                    },
+                    "homepage": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Homepage"
+                    },
+                    "latitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitude"
+                    },
+                    "region": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Region"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "category"
+                ],
+                "title": "LocationBase"
+            },
+            "LocationListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/LocationBase"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "title": "Size"
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "size",
+                    "total_pages"
+                ],
+                "title": "LocationListResponse"
+            },
+            "LocationSuggestionItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "SQLite locations.id. \uac8c\uc2dc\uae00 \uc694\uccad\uc758 location_id\uc5d0 \uc0ac\uc6a9\ud569\ub2c8\ub2e4."
+                    },
+                    "source_id": {
+                        "type": "string",
+                        "title": "Source Id",
+                        "description": "TourAPI source_contentid. Map POI id\uc640 \uac19\uc740 ID \uccb4\uacc4\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "address": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Address"
+                    },
+                    "latitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitude"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    },
+                    "thumbnail_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Thumbnail Url"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "source_id",
+                    "name",
+                    "category"
+                ],
+                "title": "LocationSuggestionItem"
+            },
+            "LocationSuggestionResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/LocationSuggestionItem"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items"
+                ],
+                "title": "LocationSuggestionResponse"
+            },
+            "MapFiltersResponse": {
+                "properties": {
+                    "place_types": {
+                        "items": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Place Types"
+                    },
+                    "regions": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Regions"
+                    },
+                    "categories": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Categories"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "place_types",
+                    "regions",
+                    "categories"
+                ],
+                "title": "MapFiltersResponse"
+            },
+            "MapPoiDetail": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "TourAPI source_contentid. \uac8c\uc2dc\uae00 location_id(SQLite PK)\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "address": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Address"
+                    },
+                    "summary": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Summary"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Description"
+                    },
+                    "telephone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Telephone"
+                    },
+                    "homepage": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Homepage"
+                    },
+                    "latitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitude"
+                    },
+                    "region": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Region"
+                    },
+                    "place_type": {
+                        "type": "string",
+                        "enum": [
+                            "tourist",
+                            "restaurant",
+                            "all"
+                        ],
+                        "title": "Place Type"
+                    },
+                    "firstimage2": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Firstimage2"
+                    },
+                    "source": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source"
+                    },
+                    "source_region": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Region"
+                    },
+                    "source_contentid": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Contentid"
+                    },
+                    "source_contenttypeid": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Contenttypeid"
+                    },
+                    "source_contenttype": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Contenttype"
+                    },
+                    "firstimage": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Firstimage"
+                    },
+                    "zipcode": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Zipcode"
+                    },
+                    "createdtime": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Createdtime"
+                    },
+                    "modifiedtime": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Modifiedtime"
+                    },
+                    "mlevel": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Mlevel"
+                    },
+                    "cpyrhtDivCd": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Cpyrhtdivcd"
+                    },
+                    "areacode": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Areacode"
+                    },
+                    "sigungucode": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Sigungucode"
+                    },
+                    "lDongRegnCd": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ldongregncd"
+                    },
+                    "lDongSignguCd": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ldongsigngucd"
+                    },
+                    "cat1": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Cat1"
+                    },
+                    "cat2": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Cat2"
+                    },
+                    "cat3": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Cat3"
+                    },
+                    "lclsSystm1": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lclssystm1"
+                    },
+                    "lclsSystm2": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lclssystm2"
+                    },
+                    "lclsSystm3": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lclssystm3"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "category",
+                    "place_type"
+                ],
+                "title": "MapPoiDetail"
+            },
+            "MapPoiItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "TourAPI source_contentid. \uac8c\uc2dc\uae00 location_id(SQLite PK)\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "address": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Address"
+                    },
+                    "summary": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Summary"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Description"
+                    },
+                    "telephone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Telephone"
+                    },
+                    "homepage": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Homepage"
+                    },
+                    "latitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitude"
+                    },
+                    "region": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Region"
+                    },
+                    "place_type": {
+                        "type": "string",
+                        "enum": [
+                            "tourist",
+                            "restaurant",
+                            "all"
+                        ],
+                        "title": "Place Type"
+                    },
+                    "firstimage2": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Firstimage2"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "category",
+                    "place_type"
+                ],
+                "title": "MapPoiItem"
+            },
+            "MapPoiListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/MapPoiItem"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "title": "Size"
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "size",
+                    "total_pages"
+                ],
+                "title": "MapPoiListResponse"
+            },
+            "PostCreateRequest": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Title"
+                    },
+                    "content": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Content"
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 4,
+                        "title": "Password"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "\uad00\uad11\uc9c0",
+                            "\ub808\ud3ec\uce20",
+                            "\ubb38\ud654\uc2dc\uc124",
+                            "\uc1fc\ud551",
+                            "\uc219\ubc15",
+                            "\uc5ec\ud589\ucf54\uc2a4",
+                            "\ucd95\uc81c\uacf5\uc5f0\ud589\uc0ac"
+                        ],
+                        "title": "Category"
+                    },
+                    "location_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Id",
+                        "description": "SQLite locations.id. /api/locations/suggestions \uc751\ub2f5\uc758 id\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4. Map POI id(TourAPI source_contentid)\ub97c \uc0ac\uc6a9\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4."
+                    },
+                    "custom_tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "maxItems": 5,
+                        "title": "Custom Tags"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 2083,
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "title",
+                    "content",
+                    "password",
+                    "category"
+                ],
+                "title": "PostCreateRequest"
+            },
+            "PostDeleteResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "deleted_id": {
+                        "type": "integer",
+                        "title": "Deleted Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message",
+                    "deleted_id"
+                ],
+                "title": "PostDeleteResponse"
+            },
+            "PostDetailResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "content": {
+                        "type": "string",
+                        "title": "Content"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "location_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Id",
+                        "description": "SQLite locations.id. Map POI id\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "custom_tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Custom Tags"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    },
+                    "view_count": {
+                        "type": "integer",
+                        "title": "View Count"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Updated At"
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/PostLocationResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "content",
+                    "category",
+                    "location_id",
+                    "custom_tags",
+                    "image_url",
+                    "view_count",
+                    "created_at",
+                    "updated_at",
+                    "location"
+                ],
+                "title": "PostDetailResponse"
+            },
+            "PostListItemResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "location_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Id",
+                        "description": "SQLite locations.id. Map POI id\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "custom_tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Custom Tags"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    },
+                    "view_count": {
+                        "type": "integer",
+                        "title": "View Count"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Updated At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "category",
+                    "location_id",
+                    "custom_tags",
+                    "image_url",
+                    "view_count",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "PostListItemResponse"
+            },
+            "PostListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/PostListItemResponse"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "title": "Size"
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "size",
+                    "total_pages"
+                ],
+                "title": "PostListResponse"
+            },
+            "PostLocationResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "SQLite locations.id"
+                    },
+                    "source_id": {
+                        "type": "string",
+                        "title": "Source Id",
+                        "description": "TourAPI source_contentid. Map POI id\uc640 \uac19\uc740 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "address": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Address"
+                    },
+                    "latitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitude"
+                    },
+                    "longitude": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitude"
+                    },
+                    "thumbnail_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Thumbnail Url"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "source_id",
+                    "name",
+                    "category",
+                    "address",
+                    "latitude",
+                    "longitude",
+                    "thumbnail_url"
+                ],
+                "title": "PostLocationResponse"
+            },
+            "PostMessageResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "post": {
+                        "$ref": "#/components/schemas/PostResponse"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message",
+                    "post"
+                ],
+                "title": "PostMessageResponse"
+            },
+            "PostPasswordRequest": {
+                "properties": {
+                    "password": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 4,
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "password"
+                ],
+                "title": "PostPasswordRequest"
+            },
+            "PostResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "content": {
+                        "type": "string",
+                        "title": "Content"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "location_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Id",
+                        "description": "SQLite locations.id. Map POI id\uc640 \ub2e4\ub978 ID\uc785\ub2c8\ub2e4."
+                    },
+                    "custom_tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Custom Tags"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    },
+                    "view_count": {
+                        "type": "integer",
+                        "title": "View Count"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Updated At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "content",
+                    "category",
+                    "location_id",
+                    "custom_tags",
+                    "image_url",
+                    "view_count",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "PostResponse"
+            },
+            "PostUpdateRequest": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Title"
+                    },
+                    "content": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Content"
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 4,
+                        "title": "Password"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "\uad00\uad11\uc9c0",
+                            "\ub808\ud3ec\uce20",
+                            "\ubb38\ud654\uc2dc\uc124",
+                            "\uc1fc\ud551",
+                            "\uc219\ubc15",
+                            "\uc5ec\ud589\ucf54\uc2a4",
+                            "\ucd95\uc81c\uacf5\uc5f0\ud589\uc0ac"
+                        ],
+                        "title": "Category"
+                    },
+                    "location_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Id",
+                        "description": "SQLite locations.id. /api/locations/suggestions \uc751\ub2f5\uc758 id\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4. Map POI id(TourAPI source_contentid)\ub97c \uc0ac\uc6a9\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4."
+                    },
+                    "custom_tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "maxItems": 5,
+                        "title": "Custom Tags"
+                    },
+                    "image_url": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 2083,
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Image Url"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "title",
+                    "content",
+                    "password",
+                    "category"
+                ],
+                "title": "PostUpdateRequest"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    },
+                    "input": {
+                        "title": "Input"
+                    },
+                    "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}

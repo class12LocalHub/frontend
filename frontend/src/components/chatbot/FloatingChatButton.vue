@@ -14,7 +14,8 @@ const toggleChatbot = () => {
     class="floating-chat-button"
     type="button"
     @click="toggleChatbot"
-    aria-label="챗봇 열기"
+    :aria-label="isOpen ? '챗봇 닫기' : '챗봇 열기'"
+    :aria-expanded="isOpen"
   >
     <span class="floating-chat-button__icon">💬</span>
     <span class="floating-chat-button__label">챗봇</span>

@@ -1,5 +1,6 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { sendChatMessage } from '../../services/chatService.js'
 
 const props = defineProps({
@@ -10,23 +11,29 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+const router = useRouter()
 
 const isOpen = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
 
+const createMessageId = (role) =>
+  `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
 const inputValue = ref('')
 const messages = ref([
   {
-    id: Date.now(),
+    id: createMessageId('assistant'),
     role: 'assistant',
     content:
       '안녕하세요! LocalHub 챗봇입니다. 서울의 관광지, 레포츠, 문화시설, 쇼핑, 숙박, 여행코스, 축제/공연행사에 대해 물어보세요.',
+    includeInHistory: false,
+    sources: [],
   },
 ])
 const loading = ref(false)
-const errorMessage = ref('')
+const inputError = ref('')
 const showSuggestions = ref(true)
 const suggestions = [
   '서울 피크닉 장소 추천해줘',
@@ -36,13 +43,66 @@ const suggestions = [
 
 const scrollAnchor = ref(null)
 const textareaRef = ref(null)
+let activeController = null
+let isUnmounted = false
 
-const addMessage = (role, content) => {
-  messages.value.push({
-    id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    role,
-    content,
-  })
+const addMessage = (message) => {
+  const nextMessage = {
+    id: createMessageId(message.role),
+    sources: [],
+    includeInHistory: false,
+    ...message,
+  }
+  messages.value.push(nextMessage)
+  return nextMessage.id
+}
+
+const updateMessage = (messageId, updates) => {
+  const index = messages.value.findIndex((message) => message.id === messageId)
+  if (index === -1) return
+  messages.value[index] = { ...messages.value[index], ...updates }
+}
+
+const getApiHistory = () =>
+  messages.value
+    .filter((message) => message.includeInHistory)
+    .slice(-20)
+    .map(({ role, content }) => ({ role, content }))
+
+const normalizeSources = (sources) => {
+  if (!Array.isArray(sources)) return []
+
+  return sources
+    .filter(
+      (source) =>
+        source &&
+        (source.type === 'post' || source.type === 'location') &&
+        source.id !== null &&
+        source.id !== undefined
+    )
+    .map((source) => ({
+      type: source.type,
+      id: String(source.id),
+      name: source.name,
+      title: source.title,
+      category: source.category,
+    }))
+}
+
+const getSourceLabel = (source) => {
+  if (source.type === 'post') return source.title || '게시글 보기'
+  return source.name || '장소 보기'
+}
+
+const getErrorMessage = (error) => {
+  const status = error?.response?.status
+
+  if (status === 400) return '요청 내용을 처리할 수 없습니다. 메시지를 확인해주세요.'
+  if (status === 422) return '메시지 형식이 올바르지 않습니다. 내용을 확인해주세요.'
+  if (status >= 500) return '서버에서 답변을 만들지 못했습니다. 잠시 후 다시 시도해주세요.'
+  if (error?.code === 'ECONNABORTED') return '응답 시간이 초과되었습니다. 다시 시도해주세요.'
+  if (!error?.response) return '네트워크 연결을 확인한 뒤 다시 시도해주세요.'
+  return '답변을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
 }
 
 const resizeTextarea = () => {
@@ -54,41 +114,83 @@ const resizeTextarea = () => {
   textarea.style.overflowY = textarea.scrollHeight > 100 ? 'auto' : 'hidden'
 }
 
+const scrollToBottom = () => {
+  if (scrollAnchor.value) {
+    scrollAnchor.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+}
+
+watch(
+  [() => props.modelValue, () => messages.value.length],
+  async ([open]) => {
+    if (!open) return
+    await nextTick()
+    scrollToBottom()
+  },
+  { flush: 'post' }
+)
+
 const submitMessage = async (content) => {
-  const trimmed = content.replace(/\s+/g, ' ').trim()
-  if (!trimmed || loading.value) {
+  const trimmed = String(content || '').trim()
+  if (!trimmed || loading.value) return
+
+  if (trimmed.length > 1000) {
+    inputError.value = '메시지는 1000자 이내로 입력해주세요.'
     return
   }
 
-  errorMessage.value = ''
-  addMessage('user', trimmed)
+  const history = getApiHistory()
+  inputError.value = ''
+  const userMessageId = addMessage({
+    role: 'user',
+    content: trimmed,
+    includeInHistory: true,
+  })
   inputValue.value = ''
   showSuggestions.value = false
-
   loading.value = true
-  addMessage('assistant', '답변을 작성하고 있어요…')
+
+  const loadingMessageId = addMessage({
+    role: 'assistant',
+    content: '답변을 작성하고 있어요…',
+    kind: 'loading',
+  })
+  const controller = new AbortController()
+  activeController = controller
 
   try {
-    const response = await sendChatMessage(trimmed, messages.value)
-    const assistantIndex = messages.value.findIndex(
-      (item) => item.role === 'assistant' && item.content === '답변을 작성하고 있어요…'
-    )
-    if (assistantIndex !== -1) {
-      messages.value[assistantIndex].content = response.answer
+    const response = await sendChatMessage(trimmed, history, { signal: controller.signal })
+    if (isUnmounted) return
+    if (!response || typeof response.answer !== 'string') {
+      throw new Error('Invalid chat response')
     }
+
+    updateMessage(loadingMessageId, {
+      content: response.answer,
+      kind: 'answer',
+      includeInHistory: true,
+      queryType: typeof response.query_type === 'string' ? response.query_type : undefined,
+      sources: normalizeSources(response.sources),
+    })
   } catch (error) {
-    errorMessage.value = '답변을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
-    const assistantIndex = messages.value.findIndex(
-      (item) => item.role === 'assistant' && item.content === '답변을 작성하고 있어요…'
-    )
-    if (assistantIndex !== -1) {
-      messages.value[assistantIndex].content = errorMessage.value
-    }
+    if (isUnmounted) return
+
+    updateMessage(userMessageId, { includeInHistory: false })
+    updateMessage(loadingMessageId, {
+      content: getErrorMessage(error),
+      kind: 'error',
+      includeInHistory: false,
+      sources: [],
+    })
+    if (!inputValue.value) inputValue.value = trimmed
   } finally {
-    loading.value = false
-    await nextTick()
-    resizeTextarea()
-    scrollToBottom()
+    if (activeController === controller) activeController = null
+    if (!isUnmounted) {
+      loading.value = false
+      await nextTick()
+      resizeTextarea()
+      scrollToBottom()
+    }
   }
 }
 
@@ -97,6 +199,7 @@ const handleSend = async () => {
 }
 
 const handleInput = () => {
+  inputError.value = ''
   resizeTextarea()
 }
 
@@ -107,19 +210,27 @@ const handleKeydown = async (event) => {
   }
 }
 
-const scrollToBottom = () => {
-  if (scrollAnchor.value) {
-    scrollAnchor.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }
-}
-
 const handleSuggestion = async (text) => {
   await submitMessage(text)
+}
+
+const handleSourceClick = async (source) => {
+  if (source.type === 'post') {
+    await router.push({ name: 'post-detail', params: { id: String(source.id) } })
+  } else if (source.type === 'location') {
+    await router.push({ name: 'map', query: { poiId: String(source.id) } })
+  }
+  isOpen.value = false
 }
 
 const closeChat = () => {
   isOpen.value = false
 }
+
+onBeforeUnmount(() => {
+  isUnmounted = true
+  activeController?.abort()
+})
 </script>
 
 <template>
@@ -135,10 +246,35 @@ const closeChat = () => {
     </div>
 
     <div class="chatbot-body">
-      <div class="message-list" aria-live="polite">
-        <div v-for="message in messages" :key="message.id" :class="['message-item', message.role === 'user' ? 'message-user' : 'message-assistant']">
-          <div class="message-bubble">
+      <div class="message-list" aria-live="polite" :aria-busy="loading">
+        <div
+          v-for="message in messages"
+          :key="message.id"
+          :class="[
+            'message-item',
+            message.role === 'user' ? 'message-user' : 'message-assistant',
+            message.kind === 'error' ? 'message-error' : '',
+          ]"
+        >
+          <div class="message-bubble" :class="{ 'message-bubble--loading': message.kind === 'loading' }">
             <p>{{ message.content }}</p>
+            <div v-if="message.sources?.length" class="message-sources" aria-label="관련 정보">
+              <button
+                v-for="source in message.sources"
+                :key="`${source.type}-${source.id}`"
+                type="button"
+                class="message-source"
+                @click="handleSourceClick(source)"
+              >
+                <span class="message-source__type">
+                  {{ source.type === 'post' ? '게시글' : '장소' }}
+                </span>
+                <span>{{ getSourceLabel(source) }}</span>
+                <span v-if="source.category" class="message-source__category">
+                  {{ source.category }}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
         <div ref="scrollAnchor"></div>
@@ -147,7 +283,14 @@ const closeChat = () => {
       <div v-if="showSuggestions" class="suggestion-panel">
         <p class="suggestion-label">추천 질문</p>
         <div class="suggestion-list">
-          <button type="button" class="suggestion-chip" v-for="suggestion in suggestions" :key="suggestion" @click="handleSuggestion(suggestion)">
+          <button
+            v-for="suggestion in suggestions"
+            :key="suggestion"
+            type="button"
+            class="suggestion-chip"
+            :disabled="loading"
+            @click="handleSuggestion(suggestion)"
+          >
             {{ suggestion }}
           </button>
         </div>
@@ -164,6 +307,7 @@ const closeChat = () => {
           @keydown="handleKeydown"
           placeholder="메시지를 입력하세요"
           aria-label="챗봇 메시지 입력"
+          maxlength="1000"
           rows="1"
         ></textarea>
         <button
@@ -176,6 +320,7 @@ const closeChat = () => {
           전송
         </button>
       </div>
+      <p v-if="inputError" class="input-error" role="alert">{{ inputError }}</p>
       <p class="input-hint">Shift + Enter로 줄바꿈</p>
     </div>
   </div>
@@ -195,7 +340,7 @@ const closeChat = () => {
   border-radius: 1.25rem;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
   overflow: hidden;
-  z-index: 40;
+  z-index: 50;
 }
 
 .chatbot-header {
@@ -244,6 +389,7 @@ const closeChat = () => {
 .message-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 0.75rem;
   overflow-y: auto;
   padding-right: 0.25rem;
@@ -263,7 +409,7 @@ const closeChat = () => {
 }
 
 .message-bubble {
-  max-width: 100%;
+  max-width: 85%;
   padding: 0.85rem 1rem;
   border-radius: 1rem;
   background: #f8fafc;
@@ -273,9 +419,55 @@ const closeChat = () => {
   white-space: pre-wrap;
 }
 
+.message-bubble p {
+  margin: 0;
+}
+
+.message-bubble--loading {
+  color: var(--color-muted);
+}
+
 .message-user .message-bubble {
   background: rgba(14, 118, 255, 0.95);
   color: #fff;
+}
+
+.message-error .message-bubble {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.message-sources {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.message-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  border: 1px solid rgba(21, 94, 239, 0.2);
+  border-radius: 0.75rem;
+  background: #fff;
+  color: var(--color-text);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.message-source__type {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.message-source__category {
+  width: 100%;
+  color: var(--color-muted);
+  font-size: 0.8rem;
 }
 
 .suggestion-panel {
@@ -303,6 +495,11 @@ const closeChat = () => {
   padding: 0.55rem 0.9rem;
   font-size: 0.88rem;
   cursor: pointer;
+}
+
+.suggestion-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .chatbot-input-area {
@@ -341,6 +538,12 @@ const closeChat = () => {
 .input-hint {
   margin: 0;
   color: rgba(100, 116, 139, 0.9);
+  font-size: 0.82rem;
+}
+
+.input-error {
+  margin: 0;
+  color: #b42318;
   font-size: 0.82rem;
 }
 
@@ -383,8 +586,8 @@ const closeChat = () => {
     padding: 0.85rem;
   }
 
-  .chatbot-input-row {
-    padding: 0.85rem;
+  .message-bubble {
+    max-width: 92%;
   }
 }
 </style>

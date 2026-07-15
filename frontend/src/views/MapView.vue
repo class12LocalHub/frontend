@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router'
 import MapCanvas from '../components/map/MapCanvas.vue'
 import MapCategoryFilter from '../components/map/MapCategoryFilter.vue'
 import PlaceList from '../components/map/PlaceList.vue'
-import { getMapPois } from '../services/mapService.js'
+
+import { getMapPoiById, getMapPois } from '../services/mapService.js'
 import { getLocationSuggestions } from '../services/locationsService.js'
 import { toApiCategory, toDisplayCategory } from '../utils/categoryConverter.js'
 
@@ -25,10 +26,7 @@ const normalizeCategory = (queryValue) => {
   const value = String(queryValue || '').trim()
   if (!value) return '전체'
 
-  const normalized = value
-    .replace(/\s+/g, '')
-    .replace(/\//g, '')
-    .toLowerCase()
+  const normalized = value.replace(/\s+/g, '').replace(/\//g, '').toLowerCase()
 
   const aliasMap = {
     관광지: '관광지',
@@ -71,6 +69,48 @@ const searchResults = ref([])
 const isFromSearch = ref(false)
 const centerCoordinates = ref(null)
 
+const normalizePoiId = (value) => {
+  const normalized = String(value ?? '').trim()
+  if (!/^\d+$/.test(normalized)) return null
+
+  const poiId = Number(normalized)
+  return Number.isSafeInteger(poiId) ? poiId : null
+}
+
+const normalizePlace = (place) => ({
+  ...place,
+  category: toDisplayCategory(place.category),
+  latitude: place.latitude ?? null,
+  longitude: place.longitude ?? null,
+})
+
+const selectPoiFromQuery = async (queryValue) => {
+  const poiId = normalizePoiId(queryValue)
+  if (poiId === null) {
+    selectedPlaceId.value = null
+    return
+  }
+
+  let targetPlace = places.value.find((place) => Number(place.id) === poiId)
+
+  if (!targetPlace) {
+    try {
+      const result = await getMapPoiById(String(poiId))
+      if (normalizePoiId(route.query.poiId) !== poiId) return
+
+      targetPlace = normalizePlace(result)
+      places.value = [targetPlace, ...places.value.filter((place) => Number(place.id) !== poiId)]
+    } catch (err) {
+      console.error(err)
+      return
+    }
+  }
+
+  selectedPlaceId.value = null
+  await nextTick()
+  selectedPlaceId.value = poiId
+}
+
 watch(
   () => route.query.category,
   (category) => {
@@ -81,7 +121,14 @@ watch(
       loadPlaces()
     }
     isFromSearch.value = false
-  }
+  },
+)
+
+watch(
+  () => route.query.poiId,
+  (poiId) => {
+    selectPoiFromQuery(poiId)
+  },
 )
 
 const loadPlaces = async () => {
@@ -106,15 +153,11 @@ const loadPlaces = async () => {
 
     const result = await getMapPois(params)
 
-    places.value = (result.items || []).map((place) => ({
-      ...place,
-      category: toDisplayCategory(place.category),
-      latitude: place.latitude ?? null,
-      longitude: place.longitude ?? null,
-    }))
-    total.value = result.total ?? (result.items?.length ?? 0)
+    places.value = (result.items || []).map(normalizePlace)
+    total.value = result.total ?? result.items?.length ?? 0
     page.value = result.page ?? page.value
     totalPages.value = result.total_pages ?? 1
+    await selectPoiFromQuery(route.query.poiId)
   } catch (err) {
     console.error(err)
     error.value = '장소 정보를 불러오지 못했습니다.'
@@ -123,6 +166,15 @@ const loadPlaces = async () => {
     totalPages.value = 1
   } finally {
     loading.value = false
+    await nextTick()
+
+    const poiId = normalizePoiId(route.query.poiId)
+    const hasSelectedPoi = places.value.some((place) => Number(place.id) === poiId)
+    if (poiId !== null && hasSelectedPoi) {
+      selectedPlaceId.value = null
+      await nextTick()
+      selectedPlaceId.value = poiId
+    }
   }
 }
 
@@ -252,7 +304,12 @@ onMounted(() => {
             <div class="map-state">{{ error }}</div>
           </template>
           <template v-else-if="filteredPlaces.length">
-            <MapCanvas :places="filteredPlaces" :selectedPlaceId="selectedPlaceId" :centerCoordinates="centerCoordinates" @select-place="handleSelectPlace" />
+            <MapCanvas
+              :places="filteredPlaces"
+              :selectedPlaceId="selectedPlaceId"
+              :centerCoordinates="centerCoordinates"
+              @select-place="handleSelectPlace"
+            />
           </template>
           <template v-else>
             <div class="map-state">표시할 장소가 없습니다.</div>
@@ -265,12 +322,8 @@ onMounted(() => {
             <p v-if="!isSearching && searchResults.length === 0" class="map-guide__summary">
               총 {{ total }}개 장소, 페이지 {{ page }} / {{ totalPages }}
             </p>
-            <p v-else-if="isSearching" class="map-guide__summary">
-              검색 중입니다...
-            </p>
-            <p v-else class="map-guide__summary">
-              {{ searchResults.length }}개 검색 결과
-            </p>
+            <p v-else-if="isSearching" class="map-guide__summary">검색 중입니다...</p>
+            <p v-else class="map-guide__summary">{{ searchResults.length }}개 검색 결과</p>
           </div>
 
           <button type="button" class="map-guide__button" @click="togglePlaceList">
@@ -286,9 +339,7 @@ onMounted(() => {
             class="map-search__input"
             @keyup.enter="handleSearch"
           />
-          <button type="button" class="map-search__button" @click="handleSearch">
-            검색
-          </button>
+          <button type="button" class="map-search__button" @click="handleSearch">검색</button>
         </div>
 
         <PlaceList
@@ -296,10 +347,17 @@ onMounted(() => {
           ref="placeListSection"
           :places="filteredPlaces"
           :selectedPlaceId="selectedPlaceId"
-          @select-place="isSearching || searchResults.length > 0 ? handleSelectPlaceFromSearch($event) : handleSelectPlace($event.id)"
+          @select-place="
+            isSearching || searchResults.length > 0
+              ? handleSelectPlaceFromSearch($event)
+              : handleSelectPlace($event.id)
+          "
         />
 
-        <div v-if="isPlaceListOpen && totalPages > 1 && !isSearching && searchResults.length === 0" class="pagination-bar">
+        <div
+          v-if="isPlaceListOpen && totalPages > 1 && !isSearching && searchResults.length === 0"
+          class="pagination-bar"
+        >
           <button
             type="button"
             class="pagination-bar__button"
