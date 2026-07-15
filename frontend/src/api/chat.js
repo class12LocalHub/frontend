@@ -1,20 +1,8 @@
-import axios from 'axios'
+import apiClient from './client'
 
-
-const API_URL = 'http://localhost:8000/api/chat'
-
-
-
-export function sendChatMessage(message){
-
-  return axios.post(
-
-    API_URL,
-
-    {
-      message:message
-    }
-
-  )
-
+export function sendChatMessage(message, history = []) {
+  return apiClient.post('/api/chat', {
+    message,
+    history: history.slice(-20),
+  })
 }

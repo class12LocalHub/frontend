@@ -1,64 +1,37 @@
-import axios from 'axios'
+import apiClient from './client'
+import { clampPageSize, normalizeLocationId } from '../utils/normalize'
 
+export function getPosts(params = {}) {
+  const query = {
+    page: Math.max(1, Number(params.page) || 1),
+    size: clampPageSize(params.size, 10),
+  }
 
-const API_URL = 'http://localhost:8000/api/posts'
+  if (params.category) query.category = params.category
+  if (params.keyword) query.keyword = params.keyword
 
+  if (params.location_id !== undefined && params.location_id !== null) {
+    const locationId = normalizeLocationId(params.location_id)
+    if (locationId !== null) query.location_id = locationId
+  }
 
-
-// 게시글 목록 조회
-export function getPosts(){
-
-  return axios.get(API_URL)
-
+  return apiClient.get('/api/posts', { params: query })
 }
 
-
-
-// 게시글 상세 조회
-export function getPost(id){
-
-  return axios.get(
-    `${API_URL}/${id}`
-  )
-
+export function getPost(id) {
+  return apiClient.get(`/api/posts/${Number(id)}`)
 }
 
-
-
-// 게시글 작성
-export function createPost(post){
-
-  return axios.post(
-    API_URL,
-    post
-  )
-
+export function createPost(post) {
+  return apiClient.post('/api/posts', post)
 }
 
-
-
-// 게시글 수정
-export function updatePost(id, post){
-
-  return axios.put(
-    `${API_URL}/${id}`,
-    post
-  )
-
+export function updatePost(id, post) {
+  return apiClient.put(`/api/posts/${Number(id)}`, post)
 }
 
-
-
-// 게시글 삭제
-export function deletePost(id, password){
-
-  return axios.delete(
-    `${API_URL}/${id}`,
-    {
-      data:{
-        password:password
-      }
-    }
-  )
-
+export function deletePost(id, password) {
+  return apiClient.delete(`/api/posts/${Number(id)}`, {
+    data: { password },
+  })
 }

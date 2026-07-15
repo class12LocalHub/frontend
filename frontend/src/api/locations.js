@@ -1,64 +1,28 @@
-import axios from 'axios'
+import apiClient from './client'
+import { clampPageSize, normalizeTourApiId } from '../utils/normalize'
 
-
-const API_URL = 'http://localhost:8000/api/posts'
-
-
-
-// 게시글 목록 조회
-export function getPosts(){
-
-  return axios.get(API_URL)
-
+export function getLocationSuggestions(keyword, limit = 10) {
+  return apiClient.get('/api/locations/suggestions', {
+    params: {
+      keyword,
+      limit: Math.min(Math.max(Number(limit) || 10, 1), 20),
+    },
+  })
 }
 
+export function getLocations(params = {}) {
+  const query = {
+    page: Math.max(1, Number(params.page) || 1),
+    size: clampPageSize(params.size, 20),
+  }
 
+  for (const key of ['place_type', 'category', 'keyword', 'region', 'bbox']) {
+    if (params[key]) query[key] = params[key]
+  }
 
-// 게시글 상세 조회
-export function getPost(id){
-
-  return axios.get(
-    `${API_URL}/${id}`
-  )
-
+  return apiClient.get('/api/locations', { params: query })
 }
 
-
-
-// 게시글 작성
-export function createPost(post){
-
-  return axios.post(
-    API_URL,
-    post
-  )
-
-}
-
-
-
-// 게시글 수정
-export function updatePost(id, post){
-
-  return axios.put(
-    `${API_URL}/${id}`,
-    post
-  )
-
-}
-
-
-
-// 게시글 삭제
-export function deletePost(id, password){
-
-  return axios.delete(
-    `${API_URL}/${id}`,
-    {
-      data:{
-        password:password
-      }
-    }
-  )
-
+export function getLocation(id) {
+  return apiClient.get(`/api/locations/${normalizeTourApiId(id)}`)
 }
