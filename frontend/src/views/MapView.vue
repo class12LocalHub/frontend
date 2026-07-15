@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MapCanvas from '../components/map/MapCanvas.vue'
 import MapCategoryFilter from '../components/map/MapCategoryFilter.vue'
 import PlaceList from '../components/map/PlaceList.vue'
+import { getMapPois } from '../services/mapService.js'
 
 const categories = [
   '전체',
@@ -34,7 +35,7 @@ const normalizeCategory = (queryValue) => {
     쇼핑: '쇼핑',
     숙박: '숙박',
     여행코스: '여행코스',
-    '축제공연행사': '축제/공연행사',
+    축제공연행사: '축제/공연행사',
     '축제/공연행사': '축제/공연행사',
     tourist: '관광지',
     leisure: '레포츠',
@@ -48,88 +49,103 @@ const normalizeCategory = (queryValue) => {
   return aliasMap[normalized] || '전체'
 }
 
+const toApiCategory = (displayCategory) => {
+  if (displayCategory === '축제/공연행사') return '축제공연행사'
+  return displayCategory
+}
+
+const toDisplayCategory = (value) => {
+  if (value === '축제공연행사') return '축제/공연행사'
+  return value || '기타'
+}
+
 const getInitialCategory = () => normalizeCategory(route.query.category)
 
 const selectedCategory = ref(getInitialCategory())
 const selectedPlaceId = ref(null)
 const isPlaceListOpen = ref(false)
+const places = ref([])
+const loading = ref(false)
+const error = ref('')
 
 watch(
   () => route.query.category,
   (category) => {
     selectedCategory.value = normalizeCategory(category)
+    loadPlaces()
   }
 )
 
-const places = [
-  {
-    id: 1,
-    name: '경복궁',
-    category: '관광지',
-    address: '서울특별시 종로구 사직로 161',
-    latitude: 37.5796,
-    longitude: 126.9770,
-  },
-  {
-    id: 2,
-    name: '롯데월드',
-    category: '레포츠',
-    address: '서울특별시 송파구 올림픽로 240',
-    latitude: 37.5110,
-    longitude: 127.0980,
-  },
-  {
-    id: 3,
-    name: 'DDP 디자인플라자',
-    category: '문화시설',
-    address: '서울특별시 중구 을지로 281',
-    latitude: 37.5663,
-    longitude: 127.0094,
-  },
-  {
-    id: 4,
-    name: '명동 쇼핑거리',
-    category: '쇼핑',
-    address: '서울특별시 중구 명동',
-    latitude: 37.5639,
-    longitude: 126.9862,
-  },
-  {
-    id: 5,
-    name: '홍대 게스트하우스',
-    category: '숙박',
-    address: '서울특별시 마포구 홍익로',
-    latitude: 37.5572,
-    longitude: 126.9243,
-  },
-  {
-    id: 6,
-    name: '한강 자전거 코스',
-    category: '여행코스',
-    address: '서울특별시 영등포구 여의도동',
-    latitude: 37.5275,
-    longitude: 126.9320,
-  },
-  {
-    id: 7,
-    name: '서울재즈페스티벌',
-    category: '축제/공연행사',
-    address: '서울특별시 송파구 올림픽공원',
-    latitude: 37.5155,
-    longitude: 127.1181,
-  },
-]
+const loadPlaces = async () => {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const baseParams = {
+      place_type: 'all',
+      region: '서울',
+      page: 1,
+      size: 20,
+    }
+
+    let results = []
+
+    if (selectedCategory.value === '전체') {
+      const categoryList = [
+        '관광지',
+        '레포츠',
+        '문화시설',
+        '쇼핑',
+        '숙박',
+        '여행코스',
+        '축제/공연행사',
+      ]
+
+      const responses = await Promise.all(
+        categoryList.map((category) => getMapPois({ ...baseParams, category: toApiCategory(category) }))
+      )
+
+      results = responses.flatMap((response) => response.items || [])
+    } else {
+      const result = await getMapPois({ ...baseParams, category: toApiCategory(selectedCategory.value) })
+      results = result.items || []
+    }
+
+    const merged = Array.from(
+      new Map(
+        results.map((place) => [
+          place.id,
+          {
+            ...place,
+            category: toDisplayCategory(place.category),
+            latitude: place.latitude ?? null,
+            longitude: place.longitude ?? null,
+          },
+        ])
+      ).values()
+    )
+
+    places.value = merged
+  } catch (err) {
+    console.error(err)
+    error.value = '장소 정보를 불러오지 못했습니다.'
+    places.value = []
+  } finally {
+    loading.value = false
+  }
+}
 
 const filteredPlaces = computed(() => {
   if (selectedCategory.value === '전체') {
-    return places
+    return places.value
   }
-  return places.filter((place) => place.category === selectedCategory.value)
+  return places.value.filter((place) => place.category === selectedCategory.value)
 })
 
 const handleCategorySelected = (category) => {
   selectedCategory.value = category
   isPlaceListOpen.value = true
+  loadPlaces()
 }
 
 const handleSelectPlace = (placeId) => {
@@ -139,6 +155,10 @@ const handleSelectPlace = (placeId) => {
 const togglePlaceList = () => {
   isPlaceListOpen.value = !isPlaceListOpen.value
 }
+
+onMounted(() => {
+  loadPlaces()
+})
 </script>
 
 <template>
@@ -157,7 +177,18 @@ const togglePlaceList = () => {
 
       <div class="map-view__content">
         <div class="map-card map-card--map">
-          <MapCanvas :places="filteredPlaces" :selectedPlaceId="selectedPlaceId" @select-place="handleSelectPlace" />
+          <template v-if="loading">
+            <div class="map-state">장소를 불러오는 중입니다...</div>
+          </template>
+          <template v-else-if="error">
+            <div class="map-state">{{ error }}</div>
+          </template>
+          <template v-else-if="filteredPlaces.length">
+            <MapCanvas :places="filteredPlaces" :selectedPlaceId="selectedPlaceId" @select-place="handleSelectPlace" />
+          </template>
+          <template v-else>
+            <div class="map-state">표시할 장소가 없습니다.</div>
+          </template>
         </div>
 
         <div class="map-guide">
@@ -249,6 +280,16 @@ const togglePlaceList = () => {
   .map-view__grid {
     grid-template-columns: 1fr;
   }
+}
+
+.map-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  color: var(--color-muted);
+  text-align: center;
+  padding: 1rem;
 }
 
 @media (max-width: 768px) {

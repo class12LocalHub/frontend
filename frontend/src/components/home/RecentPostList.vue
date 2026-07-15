@@ -1,13 +1,31 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
-const posts = [
-  { id: 1, category: '축제/공연행사', title: '여의도한강공원 야간 축제 일정 공유', createdAt: '2026-07-14', views: 128 },
-  { id: 2, category: '관광지', title: '강남역 근처 숨은 맛집 추천합니다', createdAt: '2026-07-13', views: 96 },
-  { id: 3, category: '숙박', title: '성수동 반려동물 동반 가능 숙소 후기', createdAt: '2026-07-12', views: 84 },
-  { id: 4, category: '문화시설', title: '홍대 전시 공간 운영시간 안내', createdAt: '2026-07-11', views: 71 },
-  { id: 5, category: '레포츠', title: '한강 자전거 코스 추천 포인트', createdAt: '2026-07-10', views: 63 },
-]
+const props = defineProps({
+  posts: {
+    type: Array,
+    default: () => [],
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  error: {
+    type: String,
+    default: '',
+  },
+})
+
+const normalizedPosts = computed(() =>
+  (props.posts || []).map((post) => ({
+    id: post.id,
+    category: post.category,
+    title: post.title,
+    createdAt: post.created_at ? post.created_at.slice(0, 10) : '',
+    views: post.view_count ?? 0,
+  }))
+)
 </script>
 
 <template>
@@ -17,18 +35,32 @@ const posts = [
       <RouterLink to="/board">더보기</RouterLink>
     </div>
 
-    <ul class="post-list">
-      <li v-for="post in posts" :key="post.id" class="post-item">
-        <div class="post-item__meta">
-          <span class="post-item__category">{{ post.category }}</span>
-          <RouterLink :to="`/posts/${post.id}`" class="post-item__title">{{ post.title }}</RouterLink>
-        </div>
-        <div class="post-item__info">
-          <span>{{ post.createdAt }}</span>
-          <span>조회 {{ post.views }}</span>
-        </div>
-      </li>
-    </ul>
+    <template v-if="loading">
+      <p class="status-text">게시글을 불러오는 중입니다.</p>
+    </template>
+
+    <template v-else-if="error">
+      <p class="status-text">{{ error }}</p>
+    </template>
+
+    <template v-else-if="normalizedPosts.length">
+      <ul class="post-list">
+        <li v-for="post in normalizedPosts" :key="post.id" class="post-item">
+          <div class="post-item__meta">
+            <span class="post-item__category">{{ post.category }}</span>
+            <RouterLink :to="`/posts/${post.id}`" class="post-item__title">{{ post.title }}</RouterLink>
+          </div>
+          <div class="post-item__info">
+            <span>{{ post.createdAt }}</span>
+            <span>조회 {{ post.views }}</span>
+          </div>
+        </li>
+      </ul>
+    </template>
+
+    <template v-else>
+      <p class="status-text">등록된 게시글이 없습니다.</p>
+    </template>
   </section>
 </template>
 
@@ -113,5 +145,11 @@ const posts = [
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+}
+
+.status-text {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
 }
 </style>

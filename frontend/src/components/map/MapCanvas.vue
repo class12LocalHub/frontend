@@ -47,7 +47,14 @@ const renderMarkers = () => {
   clearMarkers()
 
   props.places.forEach((place) => {
-    const marker = L.marker([Number(place.latitude), Number(place.longitude)], {
+    const latitude = Number(place.latitude)
+    const longitude = Number(place.longitude)
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return
+    }
+
+    const marker = L.marker([latitude, longitude], {
       icon: customIcon,
     })
       .addTo(mapInstance.value)
