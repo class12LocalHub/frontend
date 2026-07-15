@@ -14,10 +14,17 @@
 
 <style scoped>
 .hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  /* public/image.png 에 위치하므로 경로를 '/image.png'로 간단하게 설정합니다.
+    - center center: 이미지의 중심부를 배경의 가운데에 맞춥니다.
+    - linear-gradient: 배경 이미지 위에 반투명한 검은색 레이어를 얹어 흰색 글씨의 가독성을 높입니다.
+  */
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+              url('/image.png') no-repeat center center;
+  background-size: cover;
+  
   color: #fff;
   border-radius: var(--radius-lg);
-  padding: 2.5rem;
+  padding: 3.5rem;
   box-shadow: 0 20px 40px rgba(21, 94, 239, 0.16);
 }
 
