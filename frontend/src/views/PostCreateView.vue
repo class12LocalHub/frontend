@@ -2,18 +2,37 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import PostForm from '../components/post/PostForm.vue'
+import { createPost } from '../services/postService.js'
 
 const router = useRouter()
 const submitting = ref(false)
 const infoMessage = ref('')
+const errorMessage = ref('')
 
-const handleSubmit = (postData) => {
+const handleSubmit = async (postData) => {
+  if (submitting.value) return
+
   submitting.value = true
-  infoMessage.value = '게시글 작성 API 연결 전입니다.'
-  // TODO: 백엔드 연결 후 createPost(postData) 호출
-  setTimeout(() => {
+  infoMessage.value = ''
+  errorMessage.value = ''
+
+  try {
+    const result = await createPost(postData)
+    router.push(`/posts/${result.post.id}`)
+  } catch (error) {
+    const detailMessage = error?.response?.data?.detail?.message
+    const status = error?.response?.status
+
+    if (status === 422) {
+      errorMessage.value = '입력 내용을 다시 확인해주세요.'
+    } else if (detailMessage) {
+      errorMessage.value = detailMessage
+    } else {
+      errorMessage.value = '게시글을 등록하지 못했습니다.'
+    }
+  } finally {
     submitting.value = false
-  }, 500)
+  }
 }
 
 const handleCancel = () => {
@@ -38,7 +57,7 @@ const handleCancel = () => {
 
       <PostForm mode="create" :submitting="submitting" @submit="handleSubmit" @cancel="handleCancel" />
 
-      <p v-if="infoMessage" class="submission-info">{{ infoMessage }}</p>
+      <p v-if="errorMessage" class="submission-error">{{ errorMessage }}</p>
     </div>
   </section>
 </template>

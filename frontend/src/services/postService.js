@@ -11,11 +11,18 @@ export async function getPostById(postId) {
 }
 
 export async function createPost(postData) {
-  // TODO: 백엔드 연결 후 POST /api/posts 호출
-  throw new Error('POST_API_NOT_CONNECTED')
+  const response = await api.post('/api/posts', postData)
+  return response.data
 }
 
 export async function updatePost(postId, postData) {
-  // TODO: 백엔드 연결 후 PUT /api/posts/{postId} 호출
-  throw new Error('PUT_API_NOT_CONNECTED')
+  const response = await api.put(`/api/posts/${postId}`, postData)
+  return response.data
+}
+
+export async function deletePost(postId, password) {
+  const response = await api.delete(`/api/posts/${postId}`, {
+    data: { password },
+  })
+  return response.data
 }

@@ -2,7 +2,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LikeButton from '../components/post/LikeButton.vue'
-import { getPostById } from '../services/postService.js'
+import { deletePost, getPostById } from '../services/postService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +15,7 @@ const isModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
 const deleteInfo = ref('')
+const deleting = ref(false)
 
 const formattedContent = computed(() => post.value?.content ?? '')
 
@@ -69,7 +70,9 @@ const closeDeleteModal = () => {
   deleteInfo.value = ''
 }
 
-const handleDeleteSubmit = () => {
+const handleDeleteSubmit = async () => {
+  if (deleting.value) return
+
   deleteError.value = ''
   deleteInfo.value = ''
   const trimmed = deletePassword.value.trim()
@@ -81,7 +84,27 @@ const handleDeleteSubmit = () => {
     deleteError.value = '비밀번호는 20자 이내로 입력해주세요.'
     return
   }
-  deleteInfo.value = '백엔드 연결 후 삭제됩니다.'
+
+  deleting.value = true
+
+  try {
+    await deletePost(postId.value, trimmed)
+    closeDeleteModal()
+    router.push('/board')
+  } catch (error) {
+    const status = error?.response?.status
+    if (status === 403) {
+      deleteError.value = '비밀번호가 일치하지 않습니다.'
+    } else if (status === 404) {
+      deleteError.value = '게시글을 찾을 수 없습니다.'
+    } else if (status === 422) {
+      deleteError.value = '입력 내용을 다시 확인해주세요.'
+    } else {
+      deleteError.value = '게시글을 삭제하지 못했습니다.'
+    }
+  } finally {
+    deleting.value = false
+  }
 }
 
 const goToBoard = () => {
@@ -179,8 +202,10 @@ const formatDate = (dateString) => {
           <p v-if="deleteError" class="modal-error">{{ deleteError }}</p>
           <p v-if="deleteInfo" class="modal-info">{{ deleteInfo }}</p>
           <div class="modal-actions">
-            <button type="button" class="button-secondary" @click="closeDeleteModal">취소</button>
-            <button type="button" class="button-danger" @click="handleDeleteSubmit">삭제</button>
+            <button type="button" class="button-secondary" @click="closeDeleteModal" :disabled="deleting">취소</button>
+            <button type="button" class="button-danger" @click="handleDeleteSubmit" :disabled="deleting">
+              {{ deleting ? '삭제 중...' : '삭제' }}
+            </button>
           </div>
         </div>
       </div>

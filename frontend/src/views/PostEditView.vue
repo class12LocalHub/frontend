@@ -1,28 +1,71 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PostForm from '../components/post/PostForm.vue'
-import { posts } from '../data/mockPosts.js'
+import { getPostById, updatePost } from '../services/postService.js'
 
 const route = useRoute()
 const router = useRouter()
 const submitting = ref(false)
-const infoMessage = ref('')
+const errorMessage = ref('')
+const loading = ref(false)
 
-const postId = Number(route.params.id ?? 0)
-const post = computed(() => posts.find((item) => item.id === postId))
+const postId = ref(Number(route.params.id ?? 0))
+const post = ref(null)
 
-const handleSubmit = (postData) => {
+const loadPost = async () => {
+  loading.value = true
+  errorMessage.value = ''
+  post.value = null
+
+  try {
+    const result = await getPostById(postId.value)
+    post.value = {
+      ...result,
+      custom_tags: result.custom_tags ?? [],
+    }
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      errorMessage.value = '게시글을 찾을 수 없습니다.'
+    } else {
+      errorMessage.value = '게시글을 불러오지 못했습니다.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadPost()
+})
+
+const handleSubmit = async (postData) => {
+  if (submitting.value) return
+
   submitting.value = true
-  infoMessage.value = '게시글 수정 API 연결 전입니다.'
-  // TODO: 백엔드 연결 후 updatePost(postId, postData) 호출
-  setTimeout(() => {
+  errorMessage.value = ''
+
+  try {
+    await updatePost(postId.value, postData)
+    router.push(`/posts/${postId.value}`)
+  } catch (error) {
+    const status = error?.response?.status
+    if (status === 403) {
+      errorMessage.value = '비밀번호가 일치하지 않습니다.'
+    } else if (status === 404) {
+      errorMessage.value = '게시글을 찾을 수 없습니다.'
+    } else if (status === 422) {
+      errorMessage.value = '입력 내용을 다시 확인해주세요.'
+    } else {
+      errorMessage.value = '게시글을 수정하지 못했습니다.'
+    }
+  } finally {
     submitting.value = false
-  }, 500)
+  }
 }
 
 const handleCancel = () => {
-  router.push(post.value ? `/posts/${postId}` : '/board')
+  router.push(post.value ? `/posts/${postId.value}` : '/board')
 }
 </script>
 
@@ -41,7 +84,13 @@ const handleCancel = () => {
         <h1>게시글 수정</h1>
       </div>
 
-      <template v-if="post">
+      <template v-if="loading">
+        <div class="empty-card">
+          <p>게시글을 불러오는 중입니다.</p>
+        </div>
+      </template>
+
+      <template v-else-if="post">
         <PostForm
           mode="edit"
           :initialPost="post"
@@ -49,12 +98,12 @@ const handleCancel = () => {
           @submit="handleSubmit"
           @cancel="handleCancel"
         />
-        <p v-if="infoMessage" class="submission-info">{{ infoMessage }}</p>
+        <p v-if="errorMessage" class="submission-error">{{ errorMessage }}</p>
       </template>
 
       <template v-else>
         <div class="empty-card">
-          <p>게시글을 찾을 수 없습니다.</p>
+          <p>{{ errorMessage || '게시글을 찾을 수 없습니다.' }}</p>
           <button type="button" class="button-secondary" @click="handleCancel">
             게시판으로 돌아가기
           </button>
@@ -100,9 +149,9 @@ const handleCancel = () => {
   font-size: 1.8rem;
 }
 
-.submission-info {
+.submission-error {
   margin-top: 1rem;
-  color: var(--color-primary);
+  color: #d14343;
   font-weight: 700;
 }
 
