@@ -43,6 +43,8 @@ import MobileMenu from './MobileMenu.vue'
 
 .app-header__brand {
   text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .app-header__nav {

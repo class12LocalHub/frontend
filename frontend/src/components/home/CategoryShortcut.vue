@@ -6,7 +6,7 @@ const categories = [
   { id: 'tourist', name: '관광지', icon: '🏛️' },
   { id: 'leisure', name: '레포츠', icon: '🚴' },
   { id: 'culture', name: '문화시설', icon: '🎨' },
-  { id: 'shopping', name: '쇼핑', icon: '🛍️',  },
+  { id: 'shopping', name: '쇼핑', icon: '🛍️'  },
   { id: 'accommodation', name: '숙박', icon: '🏨' },
   { id: 'course', name: '여행코스', icon: '🗺️'  },
   { id: 'festival', name: '축제/공연행사', icon: '🎭'  },
