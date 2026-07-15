@@ -135,6 +135,8 @@ watch(isOpen, (newValue) => {
 <style scoped>
 .mobile-menu-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .mobile-menu-button {
@@ -276,7 +278,9 @@ watch(isOpen, (newValue) => {
 
 @media (max-width: 768px) {
   .mobile-menu-button {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
