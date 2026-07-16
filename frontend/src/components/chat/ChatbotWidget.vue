@@ -141,6 +141,8 @@ const submitMessage = async (content) => {
 
   const history = getApiHistory()
   inputError.value = ''
+  
+  // 1. 유저 메시지 추가
   const userMessageId = addMessage({
     role: 'user',
     content: trimmed,
@@ -150,28 +152,54 @@ const submitMessage = async (content) => {
   showSuggestions.value = false
   loading.value = true
 
+  // 2. AI 로딩 메시지 띄우기
   const loadingMessageId = addMessage({
     role: 'assistant',
     content: '답변을 작성하고 있어요…',
     kind: 'loading',
   })
+  
   const controller = new AbortController()
   activeController = controller
 
   try {
-    const response = await sendChatMessage(trimmed, history, { signal: controller.signal })
-    if (isUnmounted) return
-    if (!response || typeof response.answer !== 'string') {
-      throw new Error('Invalid chat response')
-    }
+    let isFirstChunk = true;
 
+    // 💡 3. 변경된 부분: sendChatMessage에 콜백 함수 전달
+    await sendChatMessage(
+      trimmed, 
+      history, 
+      { signal: controller.signal },
+      (chunk, fullText) => {
+        if (isUnmounted) return;
+
+        // 첫 번째 텍스트 조각이 도착하면 로딩 상태를 'answer'로 변경
+        if (isFirstChunk) {
+          updateMessage(loadingMessageId, {
+            content: fullText,
+            kind: 'answer',
+            sources: [], // 초기화
+          });
+          isFirstChunk = false;
+        } else {
+          // 이후부터는 누적된 전체 텍스트(fullText)로 계속 덮어씌움
+          updateMessage(loadingMessageId, {
+            content: fullText,
+          });
+        }
+        
+        // 글자가 추가될 때마다 자연스럽게 아래로 스크롤
+        scrollToBottom();
+      }
+    )
+
+    if (isUnmounted) return
+
+    // 💡 4. 스트리밍(답변 생성)이 완전히 끝났을 때의 최종 처리
     updateMessage(loadingMessageId, {
-      content: response.answer,
-      kind: 'answer',
       includeInHistory: true,
-      queryType: typeof response.query_type === 'string' ? response.query_type : undefined,
-      sources: normalizeSources(response.sources),
     })
+
   } catch (error) {
     if (isUnmounted) return
 
@@ -193,7 +221,6 @@ const submitMessage = async (content) => {
     }
   }
 }
-
 const handleSend = async () => {
   await submitMessage(inputValue.value)
 }
