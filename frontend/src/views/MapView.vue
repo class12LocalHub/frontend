@@ -478,6 +478,11 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="map-view">
+    <header class="map-view__intro">
+      <h1>서울 지역 탐색</h1>
+      <p>카테고리와 지도를 이용해 서울의 다양한 장소를 찾아보세요.</p>
+    </header>
+
     <div class="map-view__grid">
       <aside class="map-view__sidebar">
         <div class="map-card">
@@ -496,6 +501,7 @@ onBeforeUnmount(() => {
             <MapCanvas
               ref="mapCanvasRef"
               :places="places"
+              :selectedPlaceId="selectedPlaceId"
               :centerCoordinates="centerCoordinates"
               :currentPosition="currentPosition"
               :isLocating="isLocating"
@@ -555,9 +561,12 @@ onBeforeUnmount(() => {
 
         <div class="map-guide">
           <div class="map-guide__text">
-            <p>마커를 클릭하면 장소 정보를 확인할 수 있습니다.</p>
+            <p class="map-guide__icon">📍 지역 안내</p>
+            <p class="map-guide__count">
+              {{ isSearching ? '검색 중입니다...' : `지도에서 ${total.toLocaleString()}개의 장소를 찾았습니다.` }}
+            </p>
             <p class="map-guide__summary">
-              {{ isSearching ? '검색 중입니다...' : `총 ${total}개 장소` }}
+              마커를 클릭하면 장소 정보를 확인할 수 있습니다.
             </p>
           </div>
 
@@ -567,6 +576,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="map-search">
+          <p class="map-search__title">장소 검색</p>
           <input
             v-model="searchInput"
             type="text"
@@ -638,6 +648,19 @@ onBeforeUnmount(() => {
   z-index: 0;
 }
 
+.map-view__intro h1 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+  line-height: 1.25;
+}
+
+.map-view__intro p {
+  margin: 0.45rem 0 0;
+  color: #6b7280;
+  font-size: 0.94rem;
+}
+
 .map-view__grid {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -680,6 +703,8 @@ onBeforeUnmount(() => {
   min-height: 500px;
   position: relative;
   z-index: 0;
+  border-radius: 16px;
+  padding: 0;
 }
 
 .map-search-area-button {
@@ -688,14 +713,20 @@ onBeforeUnmount(() => {
   left: 50%;
   z-index: 500;
   transform: translateX(-50%);
-  border: none;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: #fff;
-  padding: 0.7rem 1rem;
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.16);
+  min-height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #ea580c;
+  padding: 0.62rem 0.95rem;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
   font-weight: 700;
   cursor: pointer;
+}
+
+.map-search-area-button:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #fdba74;
 }
 
 .map-search-area-button:disabled {
@@ -717,10 +748,10 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: var(--color-primary-light);
-  border: 1px solid rgba(21, 94, 239, 0.18);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  padding: 0.95rem 1.1rem;
 }
 
 .map-guide p {
@@ -728,13 +759,66 @@ onBeforeUnmount(() => {
   color: var(--color-text);
 }
 
+.map-guide__count {
+  font-weight: 700;
+}
+
+.map-guide__icon {
+  color: #ea580c;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.map-guide__summary {
+  margin-top: 0.2rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
 .map-guide__button {
-  border: none;
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
   background: var(--color-primary);
   color: #fff;
-  padding: 0.8rem 1rem;
+  padding: 0.76rem 0.95rem;
+  box-shadow: 0 5px 12px rgba(249, 115, 22, 0.22);
+  font-weight: 700;
   cursor: pointer;
+}
+
+.map-guide__button:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.map-search {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.map-search__title {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.map-search__input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0.82rem 0.95rem;
+}
+
+.map-search__input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
 }
 
 @media (max-width: 1080px) {
@@ -788,27 +872,17 @@ onBeforeUnmount(() => {
   }
 }
 
-.map-search {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.map-search__input {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.9rem 1rem;
-}
-
 .map-search__button {
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   background: var(--color-primary);
   color: #fff;
-  padding: 0.9rem 1.2rem;
+  padding: 0.84rem 1.2rem;
   cursor: pointer;
+}
+
+.map-search__button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
 }
 
 .map-search__button:disabled {
