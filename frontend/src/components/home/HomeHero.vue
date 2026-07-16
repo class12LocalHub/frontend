@@ -10,7 +10,12 @@ import { RouterLink } from 'vue-router'
       <p class="hero__description enter-up" style="--d: 170ms">
         관광지부터 축제, 맛집, 숙박까지 서울의 다양한 지역 정보를 확인하고 자유롭게 이야기를 나눠보세요.
       </p>
-      <RouterLink class="hero__button" to="/map">지역 둘러보기</RouterLink>
+      <div class="hero__button-reveal enter-up" style="--d: 270ms">
+        <RouterLink class="hero__button" to="/map">
+          <span>지역 둘러보기</span>
+          <span class="hero__button-arrow" aria-hidden="true">›</span>
+        </RouterLink>
+      </div>
     </div>
   </section>
 </template>
@@ -57,16 +62,46 @@ import { RouterLink } from 'vue-router'
 
 .hero__button {
   display: inline-flex;
-  margin-top: 1.4rem;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 0.7rem;
-  font-weight: 700;
-  padding: 0.78rem 1.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  background: linear-gradient(135deg, #ff8a1f 0%, #f97316 55%, #ea580c 100%);
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.28);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .hero__button:hover {
-  background: var(--color-primary-hover);
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
+  box-shadow: 0 10px 24px rgba(194, 65, 12, 0.32);
+  transform: translateY(-1px);
+}
+
+.hero__button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(194, 65, 12, 0.25);
+}
+
+.hero__button-reveal {
+  margin-top: 1.4rem;
+}
+
+.hero__button-arrow {
+  font-size: 1.1em;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.hero__button:hover .hero__button-arrow {
+  transform: translateX(2px);
 }
 
 .enter-up {
