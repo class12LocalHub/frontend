@@ -51,13 +51,19 @@ const changePage = (page) => {
 
 .pagination-bar button {
   border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  border-radius: 10px;
   background: #fff;
   color: var(--color-text);
   padding: 0.55rem 0.75rem;
   font-size: 0.92rem;
   cursor: pointer;
-  min-width: 2.4rem;
+  min-width: 2.5rem;
+  height: 2.5rem;
+}
+
+.pagination-bar button:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: var(--color-primary);
 }
 
 .pagination-bar button:disabled {

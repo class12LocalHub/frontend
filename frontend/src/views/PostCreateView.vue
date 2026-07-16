@@ -85,9 +85,9 @@ const handleCancel = () => {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
+  color: #6b7280;
+  font-size: 0.88rem;
+  margin-bottom: 0.95rem;
 }
 
 .breadcrumb a {
@@ -95,18 +95,30 @@ const handleCancel = () => {
   text-decoration: none;
 }
 
+.breadcrumb a:hover {
+  color: var(--color-primary-hover);
+}
+
 .page-title-row {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
 }
 
 .page-title-row h1 {
   margin: 0;
-  font-size: 1.8rem;
+  color: #111827;
+  font-size: clamp(1.7rem, 2.8vw, 2rem);
+  font-weight: 700;
 }
 
 .submission-info {
   margin-top: 1rem;
   color: var(--color-primary);
+  font-weight: 700;
+}
+
+.submission-error {
+  margin-top: 1rem;
+  color: #d14343;
   font-weight: 700;
 }
 </style>

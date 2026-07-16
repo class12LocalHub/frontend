@@ -95,13 +95,12 @@ const goToCreate = () => {
 <template>
   <section class="page board-list-view">
     <div class="board-controls">
-      <div class="board-header-row">
-        <div class="board-title-group">
+      <header class="board-header">
+        <div class="board-header-text">
           <h1 class="page-title">게시판</h1>
           <p class="page-description">서울 여행 정보와 꿀팁을 공유하고 편하게 찾아보세요.</p>
         </div>
-        <button type="button" class="write-button" @click="goToCreate">글쓰기</button>
-      </div>
+      </header>
 
       <div class="board-action-row">
         <div class="filter-row">
@@ -140,32 +139,41 @@ const goToCreate = () => {
   </template>
 </div>
 
-<PaginationBar
-  v-if="totalPages > 1"
-  :current-page="currentPage"
-  :total-pages="totalPages"
-  @change:page="handlePageChange"
-/>
+    <div class="board-footer">
+      <PaginationBar
+        v-if="totalPages > 1"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @change:page="handlePageChange"
+      />
+
+      <button type="button" class="write-button" @click="goToCreate">글쓰기</button>
+    </div>
   </section>
 </template>
 
 <style scoped>
-.board-header {
-  display: none;
-}
-
 .write-button {
-  height: 36px;
+  height: 40px;
+  min-width: 84px;
   padding: 0 16px;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: 10px;
   background: var(--color-primary);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   font-size: 0.92rem;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.write-button:hover {
+  background: var(--color-primary-hover);
 }
 
 .board-controls {
@@ -177,16 +185,34 @@ const goToCreate = () => {
   box-sizing: border-box;
 }
 
-.board-header-row {
+.board-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 24px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   flex-wrap: wrap;
   box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+.board-header-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.board-header-text .page-title {
+  margin: 0;
+}
+
+.board-header-text .page-description {
+  margin: 0;
 }
 
 .board-action-row {
@@ -213,15 +239,34 @@ const goToCreate = () => {
 
 .board-list {
   min-height: 260px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
 }
 
 .empty-state {
   padding: 1.5rem;
   text-align: center;
   color: var(--color-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: #f8fafc;
+  background: #fff;
+}
+
+.board-footer {
+  position: relative;
+  margin-top: 1rem;
+  min-height: 40px;
+}
+
+.board-footer :deep(.pagination-bar) {
+  justify-content: center;
+}
+
+.board-footer .write-button {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 @media (min-width: 1101px) {
@@ -240,6 +285,10 @@ const goToCreate = () => {
 }
 
 @media (max-width: 1100px) {
+  .board-header {
+    align-items: flex-start;
+  }
+
   .board-action-row {
     flex-direction: column;
     align-items: stretch;
@@ -256,12 +305,36 @@ const goToCreate = () => {
     gap: 0.75rem;
   }
 
-  .board-header-row {
+  .board-header {
     gap: 0.75rem;
   }
 
   .board-action-row {
     gap: 0.75rem;
+  }
+
+  .board-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    min-height: 0;
+  }
+
+  .board-footer .write-button {
+    position: static;
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .board-header {
+    gap: 0.75rem;
+  }
+
+  .board-footer .write-button {
+    width: 100%;
+    align-self: stretch;
   }
 }
 </style>
