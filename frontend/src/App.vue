@@ -19,12 +19,12 @@ import FloatingChatButton from './components/chatbot/FloatingChatButton.vue'
 <style scoped>
 .app-shell {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--color-bg);
 }
 
 .app-main {
-  max-width: 1120px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 1.5rem 1.25rem 4rem;
 }
 </style>

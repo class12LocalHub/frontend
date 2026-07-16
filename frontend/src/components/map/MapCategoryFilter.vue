@@ -31,18 +31,21 @@ const emit = defineEmits(['update:selected'])
 .category-filter__button {
   width: 100%;
   text-align: left;
-  padding: 0.9rem 1rem;
+  min-height: 44px;
+  padding: 0.75rem 0.95rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: 11px;
   background: #fff;
-  color: var(--color-text);
+  color: #1f2937;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .category-filter__button:hover {
-  border-color: var(--color-primary);
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #ea580c;
 }
 
 .category-filter__button.active {

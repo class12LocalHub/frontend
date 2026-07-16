@@ -45,16 +45,32 @@ const normalizedPosts = computed(() =>
 
     <template v-else-if="normalizedPosts.length">
       <ul class="post-list">
-        <li v-for="(post, index) in normalizedPosts" :key="post.id" class="post-item enter-item" :style="{ '--pi': index }">
-          <div class="post-item__meta">
-            <span class="post-item__category">{{ post.category }}</span>
-            <RouterLink :to="`/posts/${post.id}`" class="post-item__title">{{ post.title }}</RouterLink>
-          </div>
-          <div class="post-item__info">
-            <span>{{ post.createdAt }}</span>
-            <span>조회 {{ post.views }}</span>
-          </div>
-        </li>
+        <RouterLink
+          v-for="(post, index) in normalizedPosts"
+          :key="post.id"
+          :to="`/posts/${post.id}`"
+          custom
+          v-slot="{ navigate }"
+        >
+          <li
+            class="post-item enter-item"
+            :style="{ '--pi': index }"
+            role="link"
+            tabindex="0"
+            @click="navigate"
+            @keydown.enter.prevent="navigate"
+            @keydown.space.prevent="navigate"
+          >
+            <div class="post-item__meta">
+              <span class="post-item__category">{{ post.category }}</span>
+              <span class="post-item__title">{{ post.title }}</span>
+            </div>
+            <div class="post-item__info">
+              <span>{{ post.createdAt }}</span>
+              <span>조회 {{ post.views }}</span>
+            </div>
+          </li>
+        </RouterLink>
       </ul>
     </template>
 
@@ -70,6 +86,7 @@ const normalizedPosts = computed(() =>
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
 }
 
 .recent-posts__header {
@@ -96,21 +113,28 @@ const normalizedPosts = computed(() =>
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0;
 }
 
 .post-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.9rem 0;
+  padding: 0.92rem 0.35rem;
   border-bottom: 1px solid #f3f4f6;
   gap: 1rem;
   transition: transform 180ms ease;
+  cursor: pointer;
 }
 
 .post-item:hover {
+  background: var(--color-primary-light);
   transform: translateX(3px);
+}
+
+.post-item:focus-visible {
+  outline: 2px solid #fdba74;
+  outline-offset: 2px;
 }
 
 .enter-item {
@@ -145,16 +169,32 @@ const normalizedPosts = computed(() =>
 }
 
 .post-item__category {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: var(--color-primary);
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border: 1px solid #fdba74;
+  border-radius: 9999px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .post-item__title {
   color: var(--color-text);
   text-decoration: none;
   font-weight: 600;
+  display: inline-block;
+  max-width: min(100%, 720px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .post-item__info {

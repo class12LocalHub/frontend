@@ -265,12 +265,12 @@ watch(isOpen, (newValue) => {
 }
 
 .mobile-menu-link:hover {
-  background: #f8fafc;
+  background: var(--color-primary-light);
   color: var(--color-primary);
 }
 
 .mobile-menu-link.active {
-  background: rgba(14, 118, 255, 0.08);
+  background: rgba(249, 115, 22, 0.1);
   color: var(--color-primary);
   border-left: 4px solid var(--color-primary);
   padding-left: calc(1.25rem - 4px);

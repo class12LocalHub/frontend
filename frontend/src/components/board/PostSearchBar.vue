@@ -35,13 +35,19 @@ const handleSearch = () => {
 
 .search-bar input {
   flex: 1;
-  min-width: 0;
+  min-width: 200px;
   height: 40px;
   padding: 0 0.95rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid #d1d5db;
+  border-radius: 11px;
   background: #fff;
   font-size: 0.95rem;
+}
+
+.search-bar input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
 }
 
 .search-bar button {
@@ -50,11 +56,15 @@ const handleSearch = () => {
   flex-shrink: 0;
   height: 40px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 11px;
   background: var(--color-primary);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+}
+
+.search-bar button:hover {
+  background: var(--color-primary-hover);
 }
 
 @media (max-width: 640px) {

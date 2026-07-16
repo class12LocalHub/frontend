@@ -35,13 +35,13 @@ const emit = defineEmits(['update:selected'])
 
 .category-filter__button {
   flex: 0 0 auto;
-  height: 34px;
-  padding: 0 0.85rem;
+  height: 38px;
+  padding: 0 0.9rem;
   font-size: 0.86rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  border-radius: 11px;
   background: #fff;
-  color: var(--color-text);
+  color: #374151;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -69,6 +69,8 @@ const emit = defineEmits(['update:selected'])
 }
 
 .category-filter__button:hover {
+  background: var(--color-primary-light);
   border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 </style>

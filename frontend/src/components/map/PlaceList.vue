@@ -23,7 +23,7 @@ const emit = defineEmits(['select-place'])
         <button type="button" class="place-item__button" @click="$emit('select-place', place)">
           <div>
             <strong>{{ place.name }}</strong>
-            <p>{{ place.category }}</p>
+            <p class="place-item__category">{{ place.category }}</p>
           </div>
           <p class="place-item__address">{{ place.address }}</p>
         </button>
@@ -72,8 +72,10 @@ const emit = defineEmits(['select-place'])
 }
 
 .place-item {
-  border: 1px solid #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
 }
 
 @media (max-width: 900px) {
@@ -83,7 +85,7 @@ const emit = defineEmits(['select-place'])
 }
 
 .place-item.active {
-  border-color: var(--color-primary);
+  border-color: #c2410c;
 }
 
 .place-item__button {
@@ -95,21 +97,41 @@ const emit = defineEmits(['select-place'])
   cursor: pointer;
 }
 
+.place-item:hover {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
 .place-item__button strong {
   display: block;
   margin-bottom: 0.25rem;
   font-size: 1rem;
+  color: #111827;
 }
 
 .place-item__button p {
   margin: 0;
-  color: var(--color-muted);
   font-size: 0.94rem;
+}
+
+.place-item__category {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid #fdba74;
+  border-radius: 9999px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.15rem 0.5rem;
 }
 
 .place-item__address {
   margin-top: 0.65rem;
-  color: var(--color-text);
+  color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {

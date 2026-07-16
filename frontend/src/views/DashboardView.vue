@@ -141,7 +141,8 @@ const createBarChart = () => {
         {
           label: '장소 수',
           data: categoryCounts.value,
-          backgroundColor: 'rgba(14, 118, 255, 0.85)',
+          backgroundColor: '#F97316',
+          hoverBackgroundColor: '#EA580C',
           borderRadius: 0,
           borderSkipped: false,
           maxBarThickness: 30,
@@ -168,7 +169,7 @@ const createBarChart = () => {
           display: true,
           text: '카테고리별 장소 수',
           color: '#0f172a',
-          font: { size: 16, weight: '700' },
+          font: { size: 17, weight: '700' },
         },
         tooltip: {
           callbacks: {
@@ -183,9 +184,10 @@ const createBarChart = () => {
       scales: {
         x: {
           beginAtZero: true,
-          grid: { color: 'rgba(15, 23, 42, 0.08)' },
+          grid: { color: 'rgba(229, 231, 235, 0.9)' },
           ticks: {
             color: '#334155',
+            font: { size: 12 },
             callback: (value) => value.toLocaleString('ko-KR'),
           },
         },
@@ -194,7 +196,7 @@ const createBarChart = () => {
           ticks: {
             color: '#334155',
             autoSkip: false,
-            font: { size: 12 },
+            font: { size: 13 },
           },
         },
       },
@@ -217,13 +219,13 @@ const createDoughnutChart = () => {
         {
           data: categoryCounts.value,
           backgroundColor: [
-            'rgba(14, 118, 255, 0.92)',
-            'rgba(56, 189, 248, 0.88)',
-            'rgba(59, 130, 246, 0.82)',
-            'rgba(14, 165, 233, 0.78)',
-            'rgba(96, 165, 250, 0.76)',
-            'rgba(37, 99, 235, 0.85)',
-            'rgba(191, 219, 254, 0.95)',
+            '#F97316',
+            '#FB923C',
+            '#FDBA74',
+            '#FED7AA',
+            '#FFEDD5',
+            '#F59E0B',
+            '#D97706',
           ],
           borderColor: '#fff',
           borderWidth: 2,
@@ -250,10 +252,10 @@ const createDoughnutChart = () => {
             color: '#334155',
             boxWidth: 10,
             boxHeight: 10,
-            padding: 10,
+            padding: 14,
             usePointStyle: true,
             font: {
-              size: 11,
+              size: 12,
             },
           },
         },
@@ -261,7 +263,7 @@ const createDoughnutChart = () => {
           display: true,
           text: '카테고리별 비율',
           color: '#0f172a',
-          font: { size: 16, weight: '700' },
+          font: { size: 17, weight: '700' },
         },
         tooltip: {
           callbacks: {
@@ -439,25 +441,37 @@ onBeforeUnmount(() => {
         <!-- 상단 4개 지표 카드 -->
         <div class="metrics-grid">
           <article class="metric-card fade-up">
-            <p class="metric-label">전체 장소</p>
+            <div class="metric-label-row">
+              <span class="metric-icon" aria-hidden="true">📍</span>
+              <p class="metric-label">전체 장소</p>
+            </div>
             <p class="metric-value">{{ formatNumber(totalLocations) }}</p>
             <p class="metric-unit">개</p>
           </article>
 
           <article class="metric-card fade-up">
-            <p class="metric-label">전체 게시글</p>
+            <div class="metric-label-row">
+              <span class="metric-icon" aria-hidden="true">📝</span>
+              <p class="metric-label">전체 게시글</p>
+            </div>
             <p class="metric-value">{{ formatNumber(totalPosts) }}</p>
             <p class="metric-unit">개</p>
           </article>
 
           <article class="metric-card fade-up">
-            <p class="metric-label">장소 가장 많은 카테고리</p>
+            <div class="metric-label-row">
+              <span class="metric-icon" aria-hidden="true">🛍️</span>
+              <p class="metric-label">장소 가장 많은 카테고리</p>
+            </div>
             <p class="metric-value" v-if="maxLocationCategory">{{ maxLocationCategory.category }}</p>
             <p class="metric-subtext" v-if="maxLocationCategory">전체 장소의 {{ maxLocationCategory.ratio }}%</p>
           </article>
 
           <article class="metric-card fade-up">
-            <p class="metric-label">활발한 게시글 카테고리</p>
+            <div class="metric-label-row">
+              <span class="metric-icon" aria-hidden="true">💬</span>
+              <p class="metric-label">활발한 게시글 카테고리</p>
+            </div>
             <p class="metric-value" v-if="maxPostCategory">{{ maxPostCategory.category }}</p>
             <p class="metric-subtext" v-if="maxPostCategory">전체 게시글의 {{ maxPostCategory.ratio }}%</p>
           </article>
@@ -491,24 +505,31 @@ onBeforeUnmount(() => {
         <!-- 서울 데이터 인사이트 -->
         <div v-if="insights.length > 0" class="insights-section fade-up">
           <div class="insights-header">
-            <h2>📊 서울 데이터 인사이트</h2>
+            <h2><span class="section-title-icon" aria-hidden="true">📊</span><span>서울 데이터 인사이트</span></h2>
           </div>
           <div class="insights-grid">
             <div v-for="(insight, index) in insights" :key="index" class="insight-item">
-              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '📉' }}</div>
-              <p class="insight-text">{{ insight }}</p>
+              <div class="insight-icon">{{ index === 0 ? '📍' : index === 1 ? '📝' : '🔎' }}</div>
+              <div class="insight-copy">
+                <p class="insight-title">{{ index === 0 ? '장소 인사이트' : index === 1 ? '게시글 인사이트' : '숨은 카테고리' }}</p>
+                <p class="insight-text">{{ insight }}</p>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 숨은 지역 이야기 -->
         <div v-if="hiddenCategory" class="hidden-story-section fade-up">
-          <h2>🔍 숨은 지역 이야기</h2>
-          <p class="hidden-story-desc">
-            {{ hiddenCategory.displayName }} 장소는 {{ formatNumber(hiddenCategory.locationCount) }}곳이 등록되어 있지만<br>
-            <template v-if="hiddenCategory.postCount === 0">아직 작성된 지역 이야기가 없습니다.</template>
-            <template v-else>작성된 지역 이야기는 {{ hiddenCategory.postCount }}개뿐입니다.</template>
-          </p>
+          <div class="hidden-story-header">
+            <div>
+              <h2><span class="section-title-icon" aria-hidden="true">🔍</span><span>숨은 지역 이야기</span></h2>
+              <p class="hidden-story-desc">
+                <strong>{{ hiddenCategory.displayName }}</strong> 장소는 <strong>{{ formatNumber(hiddenCategory.locationCount) }}곳</strong>이 등록되어 있지만
+                <template v-if="hiddenCategory.postCount === 0"> 아직 작성된 지역 이야기가 없습니다.</template>
+                <template v-else> 작성된 지역 이야기는 <strong>{{ hiddenCategory.postCount }}개</strong>뿐입니다.</template>
+              </p>
+            </div>
+          </div>
           <div class="hidden-story-actions">
             <button type="button" class="story-action-btn story-map-btn" @click="goToHiddenCategoryMap(hiddenCategory.category)">
               {{ hiddenCategory.displayName }} 장소 둘러보기
@@ -522,12 +543,20 @@ onBeforeUnmount(() => {
         <!-- 최근 지역 이야기 -->
         <div class="recent-posts-section fade-up">
           <div class="recent-posts-header">
-            <h2>최근 지역 이야기</h2>
+            <h2><span class="section-title-icon" aria-hidden="true">📝</span><span>최근 지역 이야기</span></h2>
             <button type="button" class="view-all-button" @click="goToBoard">전체 보기</button>
           </div>
 
           <div v-if="recentPosts.length > 0" class="posts-grid">
-            <article v-for="post in recentPosts" :key="post.id" class="post-card" @click="goToPostDetail(post.id)">
+            <article
+              v-for="post in recentPosts"
+              :key="post.id"
+              class="post-card"
+              role="link"
+              tabindex="0"
+              @click="goToPostDetail(post.id)"
+              @keydown.enter.prevent="goToPostDetail(post.id)"
+            >
               <div class="post-content">
                 <div class="post-title">{{ post.title }}</div>
                 <div class="post-info">
@@ -575,6 +604,16 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
+.dashboard-header .page-title {
+  margin: 0;
+  color: #111827;
+}
+
+.dashboard-header .page-description {
+  margin: 0.4rem 0 0;
+  color: #6b7280;
+}
+
 /* 지표 카드 그리드 */
 .metrics-grid {
   display: grid;
@@ -594,17 +633,36 @@ onBeforeUnmount(() => {
   justify-content: flex-start;
 }
 
+.metric-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9999px;
+  background: #fff7ed;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
 .metric-label {
-  margin: 0 0 0.75rem;
-  color: var(--color-muted);
-  font-size: 0.95rem;
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 .metric-value {
   margin: 0 0 0.25rem;
-  font-size: 1.9rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-weight: 700;
   color: var(--color-primary);
   line-height: 1.2;
 }
@@ -693,7 +751,7 @@ onBeforeUnmount(() => {
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: 1rem;
-  padding: 1.25rem;
+  padding: 1.1rem;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
@@ -762,7 +820,7 @@ onBeforeUnmount(() => {
   display: block;
   font-size: 1.7rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: #f97316;
 }
 
 .donut-label {
@@ -788,26 +846,53 @@ onBeforeUnmount(() => {
   color: #0f172a;
 }
 
+.insights-header h2,
+.recent-posts-header h2,
+.hidden-story-section h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .insights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .insight-item {
   display: flex;
-  gap: 1rem;
-  padding: 0.75rem 0;
+  gap: 0.9rem;
+  padding: 1rem;
+  background: #fffaf5;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
 }
 
 .insight-icon {
   flex-shrink: 0;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.insight-copy {
+  min-width: 0;
+}
+
+.insight-title {
+  margin: 0 0 0.35rem;
+  color: #111827;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .insight-text {
   margin: 0;
-  color: var(--color-text);
+  color: #6b7280;
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -837,10 +922,10 @@ onBeforeUnmount(() => {
 
 .view-all-button,
 .create-button {
-  border: 1px solid var(--color-border);
+  border: 1px solid #fdba74;
   border-radius: 0.75rem;
-  background: #f8fafc;
-  color: var(--color-primary);
+  background: #fff7ed;
+  color: #ea580c;
   padding: 0.75rem 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -849,8 +934,9 @@ onBeforeUnmount(() => {
 }
 
 .view-all-button:hover {
-  background: #eff6ff;
-  border-color: var(--color-primary);
+  background: #fff1e7;
+  border-color: #f97316;
+  color: #ea580c;
 }
 
 .create-button {
@@ -860,7 +946,7 @@ onBeforeUnmount(() => {
 }
 
 .create-button:hover {
-  background: rgba(14, 118, 255, 0.9);
+  background: #ea580c;
 }
 
 .posts-grid {
@@ -870,7 +956,7 @@ onBeforeUnmount(() => {
 }
 
 .post-card {
-  background: #f9fafb;
+  background: #fff;
   border: 1px solid var(--color-border);
   border-radius: 1rem;
   padding: 1.25rem;
@@ -880,12 +966,19 @@ onBeforeUnmount(() => {
   transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
   min-height: 160px;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .post-card:hover {
   transform: translateY(-2px);
-  background: #fff;
+  background: #fff7ed;
+  border-color: #fdba74;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.post-card:focus-visible {
+  outline: 2px solid #fdba74;
+  outline-offset: 2px;
 }
 
 .post-icon {
@@ -947,11 +1040,13 @@ onBeforeUnmount(() => {
 }
 
 .post-category {
-  display: inline-block;
-  background: rgba(14, 118, 255, 0.12);
-  color: var(--color-primary);
-  padding: 0.25rem 0.6rem;
-  border-radius: 0.4rem;
+  display: inline-flex;
+  width: fit-content;
+  background: #fff7ed;
+  color: #ea580c;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  border: 1px solid #fdba74;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1004,6 +1099,13 @@ onBeforeUnmount(() => {
   margin-bottom: 2rem;
 }
 
+.hidden-story-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
 .hidden-story-section h2 {
   margin: 0 0 1rem;
   font-size: 1.3rem;
@@ -1011,7 +1113,7 @@ onBeforeUnmount(() => {
 }
 
 .hidden-story-desc {
-  margin: 0 0 1.25rem;
+  margin: 0;
   color: var(--color-text);
   font-size: 0.95rem;
   line-height: 1.7;
@@ -1024,8 +1126,9 @@ onBeforeUnmount(() => {
 }
 
 .story-action-btn {
-  padding: 0.7rem 1.2rem;
-  border-radius: 0.75rem;
+  min-height: 40px;
+  padding: 0.7rem 1.1rem;
+  border-radius: 11px;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -1033,13 +1136,13 @@ onBeforeUnmount(() => {
 }
 
 .story-map-btn {
-  background: #f0f7ff;
+  background: #fff7ed;
   border: 1px solid var(--color-primary);
-  color: var(--color-primary);
+  color: #ea580c;
 }
 
 .story-map-btn:hover {
-  background: #dbeafe;
+  background: #fff1e7;
 }
 
 .story-create-btn {
@@ -1049,7 +1152,7 @@ onBeforeUnmount(() => {
 }
 
 .story-create-btn:hover {
-  background: rgba(14, 118, 255, 0.85);
+  background: #ea580c;
 }
 
 /* 애니메이션 */
@@ -1192,6 +1295,10 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 
+  .hidden-story-header {
+    align-items: flex-start;
+  }
+
   .recent-posts-header {
     flex-direction: column;
     align-items: stretch;
@@ -1253,6 +1360,11 @@ onBeforeUnmount(() => {
   .insights-section,
   .hidden-story-section {
     padding: 1rem;
+  }
+
+  .hidden-story-header {
+    flex-direction: column;
+    gap: 0.65rem;
   }
 
   .hidden-story-actions {

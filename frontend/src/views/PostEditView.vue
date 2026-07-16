@@ -131,9 +131,9 @@ const handleCancel = () => {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
+  color: #6b7280;
+  font-size: 0.88rem;
+  margin-bottom: 0.95rem;
 }
 
 .breadcrumb a {
@@ -141,13 +141,19 @@ const handleCancel = () => {
   text-decoration: none;
 }
 
+.breadcrumb a:hover {
+  color: var(--color-primary-hover);
+}
+
 .page-title-row {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
 }
 
 .page-title-row h1 {
   margin: 0;
-  font-size: 1.8rem;
+  color: #111827;
+  font-size: clamp(1.7rem, 2.8vw, 2rem);
+  font-weight: 700;
 }
 
 .submission-error {
@@ -158,9 +164,10 @@ const handleCancel = () => {
 
 .empty-card {
   padding: 1.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
   background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
 .empty-card p {
@@ -172,10 +179,14 @@ const handleCancel = () => {
   min-width: 120px;
   height: 44px;
   padding: 0 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
   background: #fff;
   color: var(--color-text);
   cursor: pointer;
+}
+
+.button-secondary:hover {
+  background: #fff7ed;
 }
 </style>

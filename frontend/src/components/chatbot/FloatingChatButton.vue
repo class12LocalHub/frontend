@@ -29,16 +29,20 @@ const toggleChatbot = () => {
   bottom: 1.25rem;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #14b8a6 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: #fff;
   padding: 0.9rem 1.1rem;
-  box-shadow: 0 12px 24px rgba(20, 184, 166, 0.23);
+  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.24);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.45rem;
   font-weight: 700;
   z-index: 45;
+}
+
+.floating-chat-button:hover {
+  background: #ea580c;
 }
 
 .floating-chat-button__icon {

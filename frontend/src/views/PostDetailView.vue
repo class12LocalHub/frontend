@@ -188,27 +188,33 @@ const displayCategory = (category) => {
       <template v-else-if="status === 'ready' && post">
         <article class="post-card">
           <div class="post-header">
-            <div>
+            <div class="post-header__main">
               <h1>{{ post.title }}</h1>
               <div class="meta-row">
-                <span class="badge">{{ displayCategory(post.category) }}</span>
-                <button 
-                  v-if="hasLocation"
-                  type="button"
-                  class="location-badge" 
-                  @click="goToLocation"
-                >
-                  📍 {{ post.location?.name || '장소 정보' }}
-                </button>
-                <span>· {{ formatDate(post.created_at) }}</span>
-                <span>· 조회수 {{ post.view_count }}</span>
+                <div class="meta-row__top">
+                  <span class="badge">{{ displayCategory(post.category) }}</span>
+                  <button
+                    v-if="hasLocation"
+                    type="button"
+                    class="location-badge"
+                    @click="goToLocation"
+                  >
+                    <span class="location-badge__icon">📍</span>
+                    <span>{{ post.location?.name || '장소 정보' }}</span>
+                  </button>
+                </div>
+                <div class="meta-row__bottom">
+                  <span>{{ formatDate(post.created_at) }}</span>
+                  <span>·</span>
+                  <span>조회수 {{ post.view_count }}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="tag-row">
+          <div v-if="post.custom_tags.length" class="tag-row">
             <button v-for="tag in post.custom_tags" :key="tag" type="button" class="tag-pill">
-              #{{ tag }}
+              {{ String(tag).startsWith('#') ? tag : `#${tag}` }}
             </button>
           </div>
 
@@ -259,7 +265,10 @@ const displayCategory = (category) => {
 .post-detail-view {
   display: flex;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .detail-container {
@@ -272,9 +281,9 @@ const displayCategory = (category) => {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
+  color: #6b7280;
+  font-size: 0.88rem;
+  margin-bottom: 0.95rem;
 }
 
 .breadcrumb a {
@@ -282,12 +291,16 @@ const displayCategory = (category) => {
   text-decoration: none;
 }
 
+.breadcrumb a:hover {
+  color: var(--color-primary-hover);
+}
+
 .post-card {
   background: #fff;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
 .post-header {
@@ -298,81 +311,112 @@ const displayCategory = (category) => {
   flex-wrap: wrap;
 }
 
+.post-header__main {
+  min-width: 0;
+  width: 100%;
+}
+
 .post-header h1 {
   margin: 0;
-  font-size: 1.8rem;
-  line-height: 1.3;
+  color: #111827;
+  font-size: clamp(1.65rem, 2.7vw, 2.15rem);
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .meta-row {
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.meta-row__top,
+.meta-row__bottom {
+  display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.85rem;
-  color: var(--color-muted);
-  font-size: 0.95rem;
   align-items: center;
+  gap: 0.6rem;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(14, 118, 255, 0.12);
-  color: var(--color-primary);
-  font-size: 0.88rem;
-  font-weight: 700;
+  width: fit-content;
+  align-self: flex-start;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .location-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   padding: 4px 10px;
-  height: 28px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #334155;
+  min-height: 30px;
+  border-radius: 9999px;
+  background: #fff;
+  color: #374151;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
-  border: 1px solid transparent;
+  border: 1px solid #e5e7eb;
 }
 
 .location-badge:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
 }
 
-.location-badge:focus {
+.location-badge:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.location-badge__icon {
+  line-height: 1;
 }
 
 .tag-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin: 1.25rem 0 1rem;
+  margin: 1.4rem 0 0;
 }
 
 .tag-pill {
-  border: none;
-  background: rgba(14, 118, 255, 0.12);
-  color: var(--color-primary);
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
   cursor: default;
+  white-space: nowrap;
 }
 
 .post-content {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid #f3f4f6;
   white-space: pre-wrap;
-  line-height: 1.9;
-  color: var(--color-text);
+  line-height: 1.7;
+  color: #374151;
   font-size: 1rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .detail-actions {
@@ -380,7 +424,9 @@ const displayCategory = (category) => {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 1.5rem;
+  margin-top: 1.6rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #f3f4f6;
   flex-wrap: wrap;
 }
 
@@ -396,23 +442,32 @@ const displayCategory = (category) => {
   padding: 0 16px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 11px;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
   border: 1px solid transparent;
 }
 
-.button-list,
-.button-edit {
+.button-list {
   background: #fff;
-  color: var(--color-text);
-  border-color: var(--color-border);
+  color: #111827;
+  border-color: #e5e7eb;
 }
 
-.button-list:hover,
+.button-list:hover {
+  background: #fff7ed;
+}
+
+.button-edit {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fdba74;
+}
+
 .button-edit:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: #f97316;
+  color: #fff;
+  border-color: #f97316;
 }
 
 .button-list:focus,
@@ -422,14 +477,14 @@ const displayCategory = (category) => {
 }
 
 .button-delete {
-  background: rgba(220, 38, 38, 0.1);
+  background: #fff1f2;
   color: #dc2626;
-  border-color: #fecaca;
+  border-color: #fecdd3;
 }
 
 .button-delete:hover {
-  background: rgba(220, 38, 38, 0.15);
-  border-color: #fca5a5;
+  background: #ffe4e6;
+  border-color: #fda4af;
 }
 
 .button-delete:focus {
@@ -467,10 +522,11 @@ const displayCategory = (category) => {
 
 .empty-card {
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
+  border-radius: 20px;
   padding: 2rem;
   text-align: center;
   background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
 }
 
 .empty-card p {
@@ -493,7 +549,7 @@ const displayCategory = (category) => {
   width: 100%;
   max-width: 420px;
   background: #fff;
-  border-radius: 1rem;
+  border-radius: 18px;
   padding: 1.5rem;
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.16);
 }
@@ -518,6 +574,12 @@ const displayCategory = (category) => {
   margin-bottom: 0.75rem;
 }
 
+.modal-card input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -538,7 +600,7 @@ const displayCategory = (category) => {
 
 @media (max-width: 720px) {
   .post-card {
-    padding: 1.2rem;
+    padding: 1.25rem;
   }
 
   .post-header {

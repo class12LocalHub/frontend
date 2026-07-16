@@ -1,21 +1,21 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import L from 'leaflet'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import 'leaflet/dist/leaflet.css'
 
-const placeMarkerIcon = L.icon({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  tooltipAnchor: [1, -32],
-  shadowSize: [41, 41],
-})
+const createPlaceMarkerIcon = (isSelected) =>
+  L.divIcon({
+    className: `map-pin-marker${isSelected ? ' map-pin-marker--selected' : ''}`,
+    html:
+      '<svg class="map-pin-marker__svg" viewBox="0 0 32 42" aria-hidden="true" focusable="false">' +
+      '<path class="map-pin-marker__shape" d="M16 1C8.82 1 3 6.82 3 14c0 10.13 11.21 20.99 12.63 22.33a.53.53 0 0 0 .74 0C17.79 34.99 29 24.13 29 14 29 6.82 23.18 1 16 1Z"/>' +
+      '<circle class="map-pin-marker__center" cx="16" cy="14" r="5"/>' +
+      '</svg>',
+    iconSize: [32, 42],
+    iconAnchor: [16, 40],
+    popupAnchor: [0, -36],
+    tooltipAnchor: [0, -28],
+  })
 
 const props = defineProps({
   places: {
@@ -33,6 +33,10 @@ const props = defineProps({
   isLocating: {
     type: Boolean,
     default: false,
+  },
+  selectedPlaceId: {
+    type: [Number, String],
+    default: null,
   },
 })
 
@@ -126,9 +130,10 @@ const applyMarkers = (places) => {
   places.forEach((place) => {
     const coordinates = normalizeCoordinates(place)
     if (!coordinates) return
+    const isSelected = String(place.id) === String(props.selectedPlaceId ?? '')
 
     const marker = L.marker([coordinates.latitude, coordinates.longitude], {
-      icon: placeMarkerIcon,
+      icon: createPlaceMarkerIcon(isSelected),
       pane: 'markerPane',
     })
       .bindTooltip(String(place.name ?? ''), {
@@ -342,6 +347,11 @@ watch(
 )
 
 watch(
+  () => props.selectedPlaceId,
+  () => renderMarkers(props.places),
+)
+
+watch(
   () => props.currentPosition,
   (position) => renderCurrentPosition(position),
   { deep: true },
@@ -408,7 +418,9 @@ defineExpose({
 .map-canvas {
   width: 100%;
   min-height: 500px;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
   overflow: hidden;
   background: #f3f4f6;
   position: relative;
@@ -426,14 +438,21 @@ defineExpose({
   top: 0.75rem;
   right: 0.75rem;
   z-index: 500;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  border-radius: 0.65rem;
+  min-height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   background: #fff;
   color: var(--color-text);
-  padding: 0.65rem 0.85rem;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  padding: 0.62rem 0.9rem;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
   font-weight: 700;
   cursor: pointer;
+}
+
+.map-canvas__location-button:hover:not(:disabled) {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fdba74;
 }
 
 .map-canvas__location-button:disabled {
@@ -454,5 +473,37 @@ defineExpose({
 .leaflet-container {
   width: 100%;
   height: 100%;
+}
+
+:deep(.map-pin-marker) {
+  width: 32px;
+  height: 42px;
+  margin: 0;
+  position: relative;
+  background: transparent;
+  border: none;
+}
+
+:deep(.map-pin-marker__svg) {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 4px 8px rgba(194, 65, 12, 0.22));
+}
+
+:deep(.map-pin-marker__shape) {
+  fill: #f97316;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+:deep(.map-pin-marker__center) {
+  fill: #fff;
+}
+
+:deep(.map-pin-marker--selected .map-pin-marker__shape),
+:deep(.map-pin-marker:hover .map-pin-marker__shape) {
+  fill: #ea580c;
 }
 </style>

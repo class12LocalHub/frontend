@@ -35,7 +35,7 @@ import MobileMenu from './MobileMenu.vue'
 .app-header__inner {
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 1rem 1.25rem;
+  padding: 0.8rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
