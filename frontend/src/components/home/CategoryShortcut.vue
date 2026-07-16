@@ -12,6 +12,16 @@ const categories = [
   { id: 'festival', name: '축제/공연행사', icon: '🎭'  },
 ]
 
+const categoryImageMap = {
+  tourist: '/categories/attraction.png',
+  leisure: '/categories/leports.png',
+  culture: '/categories/culture.png',
+  shopping: '/categories/shopping.png',
+  accommodation: '/categories/accommodation.png',
+  course: '/categories/travel-course.png',
+  festival: '/categories/festival.png',
+}
+
 const clonedCategories = computed(() => {
   return [...categories, ...categories, ...categories]
 })
@@ -109,6 +119,10 @@ const onMouseLeave = () => {
   isHovering.value = false
 }
 
+const handleImageError = (event) => {
+  event.target.style.display = 'none'
+}
+
 onMounted(() => {
   updateCardsToShow()
   window.addEventListener('resize', updateCardsToShow)
@@ -154,9 +168,19 @@ onUnmounted(() => {
           :style="{ width: `${100 / (cardsToShow * 3)}%` }"
         >
           <div class="category-card__inner">
-            <div class="category-card__icon">{{ category.icon }}</div>
-            <h3>{{ category.name }}</h3>
-            <p>{{ category.description }}</p>
+            <div class="category-card__image-wrap">
+              <img
+                class="category-card__image"
+                :src="categoryImageMap[category.id]"
+                :alt="`${category.name} 대표 이미지`"
+                loading="lazy"
+                @error="handleImageError"
+              />
+            </div>
+            <div class="category-card__meta">
+              <div class="category-card__icon">{{ category.icon }}</div>
+              <h3>{{ category.name }}</h3>
+            </div>
           </div>
         </RouterLink>
       </div>
@@ -251,14 +275,40 @@ onUnmounted(() => {
   display: flex;                  /* Flexbox 레이아웃 적용 */
   flex-direction: column;         /* 세로 방향으로 정렬 */
   align-items: center;            /* 가로축 중앙 정렬 */
-  justify-content: center;        /* 세로축 중앙 정렬 */
-  padding: 1.8rem 1.2rem;         /* 위아래 여백을 더 넓혀서 카드를 시원하게 만듦 */
+  justify-content: flex-start;
+  padding: 0.6rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fafafa;
+  background: #fff;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
   transition: transform 200ms ease, box-shadow 200ms ease;
   height: 100%;
   text-align: center;             /* 텍스트 중앙 정렬 보장 */
+}
+
+.category-card__image-wrap {
+  width: 100%;
+  height: 100px;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #f3f4f6;
+  margin-bottom: 0.65rem;
+}
+
+.category-card__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.category-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0 0.4rem 0.4rem;
 }
 
 .category-card:hover .category-card__inner {
@@ -267,23 +317,15 @@ onUnmounted(() => {
 }
 
 .category-card__icon {
-  font-size: 2.5rem;             /* 👈 기존 1.5rem -> 2.5rem으로 대폭 확대 */
-  margin-bottom: 0.8rem;         /* 글자와의 간격 확보 */
+  font-size: 1.15rem;
+  margin-bottom: 0;
 }
 
 .category-card h3 {
   margin: 0;                     /* 불필요한 마진 제거 */
-  font-size: 1.25rem;            /* 👈 기존 1rem -> 1.25rem으로 확대 */
-  font-weight: 700;              /* 👈 아주 두꺼운 글씨체 적용 */
+  font-size: 0.92rem;
+  font-weight: 700;
   color: var(--color-text);
-}
-
-.category-card p {
-  margin-top: 0.4rem;            /* 이름과의 간격 조정 */
-  margin-bottom: 0;
-  font-size: 0.9rem;
-  font-weight: 500;              /* 설명 글자도 약간 더 선명하게 변경 */
-  color: var(--color-muted);
-  line-height: 1.4;
+  white-space: nowrap;
 }
 </style>

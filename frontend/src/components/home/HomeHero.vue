@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import { RouterLink } from 'vue-router'
+</script>
 
 <template>
   <section class="hero">
@@ -8,24 +10,23 @@
       <p class="hero__description enter-up" style="--d: 170ms">
         관광지부터 축제, 맛집, 숙박까지 서울의 다양한 지역 정보를 확인하고 자유롭게 이야기를 나눠보세요.
       </p>
+      <RouterLink class="hero__button" to="/map">지역 둘러보기</RouterLink>
     </div>
   </section>
 </template>
 
 <style scoped>
 .hero {
-  /* public/image.png 에 위치하므로 경로를 '/image.png'로 간단하게 설정합니다.
-    - center center: 이미지의 중심부를 배경의 가운데에 맞춥니다.
-    - linear-gradient: 배경 이미지 위에 반투명한 검은색 레이어를 얹어 흰색 글씨의 가독성을 높입니다.
-  */
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
-              url('/image.png') no-repeat center center;
+  min-height: 320px;
+  background:
+    linear-gradient(96deg, rgba(15, 23, 42, 0.74) 0%, rgba(15, 23, 42, 0.58) 33%, rgba(15, 23, 42, 0.25) 62%, rgba(15, 23, 42, 0.08) 100%),
+    url('/image.png') no-repeat 56% 44%;
   background-size: cover;
   
   color: #fff;
-  border-radius: var(--radius-lg);
-  padding: 3.5rem;
-  box-shadow: 0 20px 40px rgba(21, 94, 239, 0.16);
+  border-radius: 20px;
+  padding: 2.75rem;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
 }
 
 .hero__content {
@@ -54,6 +55,20 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
+.hero__button {
+  display: inline-flex;
+  margin-top: 1.4rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 0.7rem;
+  font-weight: 700;
+  padding: 0.78rem 1.2rem;
+}
+
+.hero__button:hover {
+  background: var(--color-primary-hover);
+}
+
 .enter-up {
   animation: heroUp 500ms ease-out both;
   animation-delay: var(--d, 0ms);
@@ -73,6 +88,13 @@
 @media (prefers-reduced-motion: reduce) {
   .enter-up {
     animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 300px;
+    padding: 2rem 1.25rem;
   }
 }
 </style>

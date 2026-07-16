@@ -36,9 +36,9 @@ const loading = ref(false)
 const inputError = ref('')
 const showSuggestions = ref(true)
 const suggestions = [
-  '서울 피크닉 장소 추천해줘',
-  '문화시설을 알려줘',
-  '주말 여행코스 추천해줘',
+  '서울 레포츠 장소 추천해줘',
+  '한강 관련 게시글 찾아줘',
+  '송파구에서 갈 만한 곳 추천해줘',
 ]
 
 const scrollAnchor = ref(null)
@@ -358,14 +358,14 @@ onBeforeUnmount(() => {
   position: fixed;
   right: 1.25rem;
   bottom: 5.5rem;
-  width: min(400px, calc(100vw - 1.5rem));
-  max-height: min(560px, calc(100vh - 2rem));
+  width: min(372px, calc(100vw - 1.5rem));
+  max-height: min(600px, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 1.25rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.14);
   overflow: hidden;
   z-index: 50;
 }
@@ -375,33 +375,38 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1rem 1rem 0.85rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 0.9rem 1rem 0.8rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .chatbot-title {
   margin: 0;
   font-size: 1rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: #f97316;
 }
 
 .chatbot-subtitle {
-  margin: 0.35rem 0 0;
-  font-size: 0.92rem;
-  color: var(--color-muted);
-  line-height: 1.4;
+  margin: 0.2rem 0 0;
+  font-size: 0.86rem;
+  color: #6b7280;
+  line-height: 1.35;
 }
 
 .chatbot-close {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.04);
+  border-radius: 999px;
+  background: transparent;
   color: var(--color-text);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  line-height: 1;
   cursor: pointer;
+}
+
+.chatbot-close:hover {
+  background: #fff7ed;
 }
 
 .chatbot-body {
@@ -409,7 +414,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 1rem;
+  padding: 0.95rem;
   gap: 0.75rem;
 }
 
@@ -417,7 +422,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 0.75rem;
+  gap: 0.7rem;
   overflow-y: auto;
   padding-right: 0.25rem;
   min-height: 0;
@@ -436,13 +441,15 @@ onBeforeUnmount(() => {
 }
 
 .message-bubble {
-  max-width: 85%;
-  padding: 0.85rem 1rem;
-  border-radius: 1rem;
-  background: #f8fafc;
-  color: var(--color-text);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-  word-break: keep-all;
+  max-width: 82%;
+  padding: 0.78rem 0.92rem;
+  border-radius: 16px 16px 16px 4px;
+  background: #f9fafb;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
@@ -455,13 +462,17 @@ onBeforeUnmount(() => {
 }
 
 .message-user .message-bubble {
-  background: rgba(14, 118, 255, 0.95);
+  background: #f97316;
   color: #fff;
+  border: none;
+  border-radius: 16px 16px 4px 16px;
 }
 
 .message-error .message-bubble {
   background: #fff7ed;
-  color: #9a3412;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
 }
 
 .message-sources {
@@ -476,7 +487,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.35rem;
   width: 100%;
-  border: 1px solid rgba(21, 94, 239, 0.2);
+  border: 1px solid #fed7aa;
   border-radius: 0.75rem;
   background: #fff;
   color: var(--color-text);
@@ -486,7 +497,7 @@ onBeforeUnmount(() => {
 }
 
 .message-source__type {
-  color: var(--color-primary);
+  color: #ea580c;
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -498,14 +509,14 @@ onBeforeUnmount(() => {
 }
 
 .suggestion-panel {
-  border-top: 1px solid rgba(148, 163, 184, 0.16);
-  padding-top: 0.85rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.8rem;
 }
 
 .suggestion-label {
-  margin: 0 0 0.65rem;
-  color: var(--color-muted);
-  font-size: 0.9rem;
+  margin: 0 0 0.55rem;
+  color: #6b7280;
+  font-size: 0.8rem;
 }
 
 .suggestion-list {
@@ -515,13 +526,22 @@ onBeforeUnmount(() => {
 }
 
 .suggestion-chip {
-  border: 1px solid rgba(14, 118, 255, 0.25);
-  background: rgba(14, 118, 255, 0.08);
-  color: var(--color-primary);
-  border-radius: 999px;
-  padding: 0.55rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid #fdba74;
+  background: #fff;
+  color: #ea580c;
+  border-radius: 9999px;
+  padding: 0.45rem 0.82rem;
   font-size: 0.88rem;
   cursor: pointer;
+}
+
+.suggestion-chip:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #f97316;
 }
 
 .suggestion-chip:disabled {
@@ -534,8 +554,8 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 0.35rem;
   padding: 0.75rem 1rem 1rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.16);
-  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
 }
 
 .chatbot-input-row {
@@ -547,11 +567,11 @@ onBeforeUnmount(() => {
 .chatbot-input {
   flex: 1;
   min-width: 0;
-  min-height: 44px;
+  min-height: 43px;
   max-height: 100px;
   padding: 11px 12px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 0.95rem;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
   resize: none;
   overflow-x: hidden;
   overflow-y: auto;
@@ -559,7 +579,13 @@ onBeforeUnmount(() => {
   font-size: 0.96rem;
   color: var(--color-text);
   box-sizing: border-box;
-  min-height: 44px;
+  min-height: 43px;
+}
+
+.chatbot-input:focus {
+  border-color: #f97316;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.18);
 }
 
 .input-hint {
@@ -576,17 +602,22 @@ onBeforeUnmount(() => {
 
 .chatbot-send {
   width: 68px;
-  height: 44px;
+  height: 43px;
   border: none;
-  border-radius: 0.95rem;
-  background: var(--color-primary);
+  border-radius: 14px;
+  background: #f97316;
   color: #fff;
   font-weight: 700;
   cursor: pointer;
 }
 
+.chatbot-send:hover:not(:disabled) {
+  background: #ea580c;
+}
+
 .chatbot-send:disabled {
-  opacity: 0.55;
+  background: #fdba74;
+  color: #fff;
   cursor: not-allowed;
 }
 
@@ -594,8 +625,8 @@ onBeforeUnmount(() => {
   .chatbot-widget {
     right: 1rem;
     bottom: 5rem;
-    width: min(360px, calc(100vw - 1.5rem));
-    max-height: min(560px, calc(100vh - 2rem));
+    width: min(360px, calc(100vw - 1.25rem));
+    max-height: min(600px, calc(100vh - 1.5rem));
   }
 }
 
