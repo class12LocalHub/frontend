@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CategoryFilter from '../components/board/CategoryFilter.vue'
 import PostSearchBar from '../components/board/PostSearchBar.vue'
 import PostTable from '../components/board/PostTable.vue'
@@ -9,6 +9,7 @@ import { getPosts } from '../services/postService.js'
 import { toApiCategory } from '../utils/categoryConverter.js'
 
 const router = useRouter()
+const route = useRoute()
 const categories = ['전체', '관광지', '레포츠', '문화시설', '쇼핑', '숙박', '여행코스', '축제/공연행사']
 
 const selectedCategory = ref('전체')
@@ -26,6 +27,11 @@ const pagination = ref({
 })
 
 const totalPages = computed(() => pagination.value.total_pages || 0)
+
+const normalizeCategoryQuery = (value) => {
+  const category = String(value ?? '').trim()
+  return categories.includes(category) ? category : '전체'
+}
 
 const loadPosts = async (page = 1) => {
   loading.value = true
@@ -64,10 +70,6 @@ const loadPosts = async (page = 1) => {
   }
 }
 
-onMounted(() => {
-  loadPosts(1)
-})
-
 const handleSearchQueryUpdate = (value) => {
   searchQuery.value = value
 }
@@ -78,9 +80,11 @@ const handleSearch = () => {
 }
 
 const handleCategoryChange = (category) => {
-  selectedCategory.value = category
-  currentPage.value = 1
-  loadPosts(1)
+  const nextCategory = normalizeCategoryQuery(category)
+  router.push({
+    path: '/board',
+    query: nextCategory === '전체' ? {} : { category: nextCategory },
+  })
 }
 
 const handlePageChange = (page) => {
@@ -90,6 +94,17 @@ const handlePageChange = (page) => {
 const goToCreate = () => {
   router.push('/posts/create')
 }
+
+watch(
+  () => route.query.category,
+  (category) => {
+    const nextCategory = normalizeCategoryQuery(category)
+    selectedCategory.value = nextCategory
+    currentPage.value = 1
+    loadPosts(1)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

@@ -163,7 +163,7 @@ onUnmounted(() => {
         <RouterLink
           v-for="(category, index) in clonedCategories"
           :key="`${category.id}-${index}`"
-          :to="{ path: '/map', query: { category: category.id } }"
+          :to="{ path: '/board', query: { category: category.name } }"
           class="category-card"
           :style="{ width: `${100 / (cardsToShow * 3)}%` }"
         >
