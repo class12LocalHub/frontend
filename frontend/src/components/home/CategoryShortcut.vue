@@ -148,8 +148,16 @@ onUnmounted(() => {
     <div class="section-header">
       <h2>카테고리 바로가기</h2>
       <div class="slider-controls">
-        <button class="control-btn" @click="prevSlide" aria-label="이전 카테고리">◀</button>
-        <button class="control-btn" @click="nextSlide" aria-label="다음 카테고리">▶</button>
+        <button class="control-btn" @click="prevSlide" aria-label="이전 카테고리">
+          <svg class="control-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <button class="control-btn" @click="nextSlide" aria-label="다음 카테고리">
+          <svg class="control-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -211,31 +219,80 @@ onUnmounted(() => {
 
 .slider-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .control-btn {
-  background: #fafafa;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  width: 2.2rem;
-  height: 2.2rem;
-  display: flex;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #f97316;
+  box-shadow:
+    0 4px 12px rgba(249, 115, 22, 0.15),
+    0 1px 4px rgba(17, 24, 39, 0.06);
   cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--color-text);
-  transition: background 200ms, transform 150ms;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
-.control-btn:hover {
-  background: #f0f0f0;
-  transform: scale(1.05);
+.control-btn__icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  color: inherit;
+  line-height: 1;
+  pointer-events: none;
 }
 
-.control-btn:active {
-  transform: scale(0.95);
+.control-btn__icon path {
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff8a1f 0%, #f97316 55%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.28);
+  transform: translateY(-1px);
+}
+
+.control-btn:active:not(:disabled) {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
+  color: #ffffff;
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.18);
+}
+
+.control-btn:focus {
+  outline: none;
+}
+
+.control-btn:focus-visible {
+  outline: 3px solid rgba(249, 115, 22, 0.22);
+  outline-offset: 2px;
+}
+
+.control-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
 }
 
 .slider-container {
@@ -276,23 +333,26 @@ onUnmounted(() => {
   flex-direction: column;         /* 세로 방향으로 정렬 */
   align-items: center;            /* 가로축 중앙 정렬 */
   justify-content: flex-start;
-  padding: 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
   background: #fff;
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
+  box-shadow:
+    0 4px 12px rgba(17, 24, 39, 0.08),
+    0 1px 3px rgba(17, 24, 39, 0.04);
   transition: transform 200ms ease, box-shadow 200ms ease;
   height: 100%;
   text-align: center;             /* 텍스트 중앙 정렬 보장 */
+  overflow: hidden;
 }
 
 .category-card__image-wrap {
   width: 100%;
-  height: 100px;
-  border-radius: 0.6rem;
+  height: 155px;
+  border-radius: 2px;
   overflow: hidden;
   background: #f3f4f6;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0;
 }
 
 .category-card__image {
@@ -300,15 +360,20 @@ onUnmounted(() => {
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center;
 }
 
 .category-card__meta {
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 8px;
   width: 100%;
-  padding: 0 0.4rem 0.4rem;
+  padding: 14px 4px 6px;
+  background: #fff;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .category-card:hover .category-card__inner {
@@ -319,13 +384,24 @@ onUnmounted(() => {
 .category-card__icon {
   font-size: 1.15rem;
   margin-bottom: 0;
+  color: #f97316;
 }
 
 .category-card h3 {
   margin: 0;                     /* 불필요한 마진 제거 */
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #111827;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .category-card__inner {
+    padding: 10px;
+  }
+
+  .category-card__image-wrap {
+    height: 128px;
+  }
 }
 </style>
