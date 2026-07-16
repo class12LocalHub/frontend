@@ -24,7 +24,8 @@ const normalizeHistory = (history) =>
 export async function sendChatMessage(message, history = [], options = {}, onChunk) {
   // 💡 스트리밍을 받을 때는 Axios보다 fetch API를 사용하는 것이 훨씬 제어하기 좋습니다.
   // api.defaults.baseURL 등을 썼다면, 백엔드의 풀 주소를 적어주거나 상대경로를 맞춰주세요.
-  const response = await fetch('/api/chat', {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const response = await fetch(baseUrl + '/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
