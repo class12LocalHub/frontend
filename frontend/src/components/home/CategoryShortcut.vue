@@ -203,6 +203,7 @@ onUnmounted(() => {
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   overflow: hidden;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
 }
 
 .section-header {
